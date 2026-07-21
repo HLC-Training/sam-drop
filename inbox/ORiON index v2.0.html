@@ -1,0 +1,2471 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ORiON — OFS Training</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --ev:        #005E60;
+            --ev-dark:   #003E40;
+            --ev-light:  #E6F2F2;
+            --lime:      #C8FF08;
+            --night:     #212121;
+            --body:      #444444;
+            --white:     #FFFFFF;
+            --bg:        #F4F6F5;
+            --border:    #E0E5E4;
+            --red:       #C0392B;
+            --amber:     #E67E22;
+
+            --open:          #C0392B; --open-bg:       rgba(192,57,43,0.08);
+            --inprogress:    #005E60; --inprogress-bg: #E6F2F2;
+            --done:          #27AE60; --done-bg:       rgba(39,174,96,0.08);
+            --deferred:      #777;   --deferred-bg:   #F4F6F5;
+
+            --t1:#C0392B; --t1-bg:rgba(192,57,43,0.08);
+            --t2:#E67E22; --t2-bg:rgba(230,126,34,0.08);
+            --t3:#005E60; --t3-bg:#E6F2F2;
+            --t4:#888;    --t4-bg:#F4F6F5;
+        }
+        *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+        body { font-family:'Inter',-apple-system,'Segoe UI',Arial,sans-serif; background:var(--bg); color:var(--body); line-height:1.6; }
+
+        /* ── LOGIN ── */
+        #login-screen { min-height:100vh; display:flex; align-items:center; justify-content:center; background:var(--ev); }
+        .login-card { background:var(--white); border-radius:4px; padding:48px; width:100%; max-width:500px; box-shadow:0 24px 60px rgba(0,0,0,0.3); border-top:4px solid var(--lime); }
+        .login-logo { display:flex; align-items:center; gap:16px; margin-bottom:36px; }
+        .login-logo img { height:140px; width:auto; display:block; flex-shrink:0; }
+        .login-logo-name { font-size:28px; font-weight:900; letter-spacing:2px; color:var(--night); line-height:1.2; }
+        .login-logo-sub  { font-size:9px; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; color:#999; margin-top:2px; }
+        .login-card h2 { font-size:20px; font-weight:900; text-transform:uppercase; letter-spacing:0.5px; color:var(--night); margin-bottom:6px; }
+        .login-card p  { font-size:13px; color:#777; margin-bottom:28px; line-height:1.6; }
+        .form-group { margin-bottom:16px; }
+        .form-group label { display:block; font-size:10px; font-weight:800; letter-spacing:1.5px; text-transform:uppercase; color:var(--ev); margin-bottom:6px; }
+        .form-group input,.form-group select,.form-group textarea { width:100%; padding:10px 14px; border:1px solid var(--border); border-radius:3px; font-size:14px; font-family:inherit; outline:none; background:white; color:var(--night); transition:border-color 0.2s,box-shadow 0.2s; }
+        .form-group input:focus,.form-group select:focus,.form-group textarea:focus { border-color:var(--ev); box-shadow:0 0 0 3px rgba(0,94,96,0.12); }
+        .btn-primary { width:100%; padding:13px; background:var(--ev); color:var(--lime); border:none; border-radius:3px; font-size:12px; font-weight:800; letter-spacing:1.5px; text-transform:uppercase; cursor:pointer; margin-top:4px; transition:background 0.15s; }
+        .btn-primary:hover:not(:disabled) { background:var(--ev-dark); }
+        .btn-primary:disabled { opacity:0.55; cursor:not-allowed; }
+        .login-error { color:var(--red); font-size:12px; margin-top:12px; text-align:center; display:none; line-height:1.5; }
+        .pw-wrap { position:relative; }
+        .pw-wrap input { padding-right:42px; }
+        .pw-toggle { position:absolute; top:0; right:0; height:100%; width:40px; background:none; border:none; cursor:pointer; color:#999; display:flex; align-items:center; justify-content:center; padding:0; }
+        .pw-toggle:hover { color:var(--ev); }
+        .pw-toggle svg { width:18px; height:18px; }
+
+        /* ── HEADER ── */
+        #dashboard { display:none; }
+        header { background:var(--night); padding:0 28px 0 0; height:58px; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:100; border-bottom:3px solid var(--lime); }
+        .header-brand { display:flex; align-items:center; gap:14px; }
+        .header-logo { flex-shrink:0; }
+        .header-logo img { height:54px; width:auto; display:block; }
+        .header-title { font-size:13px; font-weight:900; letter-spacing:2px; color:var(--white); }
+        .header-divider { width:1px; height:20px; background:rgba(255,255,255,0.15); }
+        .header-subtitle { font-size:10px; font-weight:600; letter-spacing:1.5px; text-transform:uppercase; color:rgba(255,255,255,0.4); }
+        .header-right { display:flex; align-items:center; gap:14px; }
+        .header-user { font-size:12px; color:rgba(255,255,255,0.5); }
+        .header-user strong { color:var(--lime); font-weight:700; }
+        .role-badge { display:inline-flex; background:rgba(200,255,8,0.12); color:var(--lime); padding:2px 7px; border-radius:2px; font-size:9px; font-weight:800; text-transform:uppercase; letter-spacing:1px; margin-left:6px; }
+        .header-version { font-size:8px; font-weight:600; letter-spacing:1px; text-transform:uppercase; color:rgba(255,255,255,0.4); white-space:nowrap; }
+        .btn-signout { background:rgba(255,255,255,0.07); color:rgba(255,255,255,0.7); border:1px solid rgba(255,255,255,0.12); border-radius:3px; padding:6px 14px; font-size:10px; font-weight:800; letter-spacing:1px; text-transform:uppercase; cursor:pointer; transition:background 0.15s; }
+        .btn-signout:hover { background:rgba(255,255,255,0.13); }
+
+        /* ── TABS ── */
+        .tab-nav { display:flex; background:var(--night); padding:0 28px 0 80px; border-bottom:1px solid rgba(255,255,255,0.08); }
+        .tab-btn { padding:13px 20px; font-size:10px; font-weight:800; text-transform:uppercase; letter-spacing:1.5px; border:none; cursor:pointer; color:rgba(255,255,255,0.35); background:transparent; border-bottom:3px solid transparent; transition:all 0.15s; margin-bottom:-1px; }
+        .tab-btn:hover { color:rgba(255,255,255,0.65); }
+        .tab-btn.active { color:var(--lime); border-bottom-color:var(--lime); }
+        .tab-panel { display:none; }
+        .tab-panel.active { display:block; }
+
+        /* ── MAIN ── */
+        .main { max-width:1280px; margin:0 auto; padding:28px 28px; }
+
+        /* ── EXEC CONTROLS ── */
+        .exec-controls { display:flex; align-items:center; justify-content:space-between; margin-bottom:20px; flex-wrap:wrap; gap:12px; }
+        .exec-controls-label { font-size:9px; font-weight:800; letter-spacing:2px; text-transform:uppercase; color:#999; }
+        .exec-owner-wrap { display:flex; align-items:center; gap:10px; }
+        .exec-owner-wrap label { font-size:10px; font-weight:800; letter-spacing:1.5px; text-transform:uppercase; color:var(--ev); }
+        .exec-owner-wrap select { padding:7px 12px; border:1px solid var(--border); border-radius:3px; font-size:12px; font-family:inherit; color:var(--night); outline:none; background:white; cursor:pointer; }
+        .exec-owner-wrap select:focus { border-color:var(--ev); }
+
+        /* ── STATS ── */
+        .stats-section { margin-bottom:24px; }
+        .stats-row-label { font-size:9px; font-weight:800; letter-spacing:2px; text-transform:uppercase; color:#999; margin-bottom:8px; padding-left:2px; }
+        .stats-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:16px; }
+        .stats-grid:last-child { margin-bottom:0; }
+        .stat-card { background:var(--white); border-radius:4px; padding:18px 20px; border:1px solid var(--border); border-bottom:3px solid transparent; }
+        .stat-card.s-open     { border-bottom-color:var(--open); }
+        .stat-card.s-progress { border-bottom-color:var(--ev); }
+        .stat-card.s-done     { border-bottom-color:var(--done); }
+        .stat-card.s-deferred { border-bottom-color:var(--deferred); }
+        .stat-card.t1 { border-bottom-color:var(--t1); }
+        .stat-card.t2 { border-bottom-color:var(--t2); }
+        .stat-card.t3 { border-bottom-color:var(--t3); }
+        .stat-card.t4 { border-bottom-color:var(--t4); }
+        .stat-label { font-size:9px; font-weight:800; text-transform:uppercase; letter-spacing:1.5px; color:#999; margin-bottom:8px; }
+        .stat-value { font-size:34px; font-weight:900; line-height:1; }
+        .s-open .stat-value     { color:var(--open); }
+        .s-progress .stat-value { color:var(--ev); }
+        .s-done .stat-value     { color:var(--done); }
+        .s-deferred .stat-value { color:var(--deferred); }
+        .t1 .stat-value { color:var(--t1); }
+        .t2 .stat-value { color:var(--t2); }
+        .t3 .stat-value { color:var(--t3); }
+        .t4 .stat-value { color:var(--t4); }
+
+        /* ── CHARTS ── */
+        .charts-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+        .chart-card { background:var(--white); border:1px solid var(--border); border-radius:4px; padding:20px; }
+        .chart-title { font-size:10px; font-weight:800; text-transform:uppercase; letter-spacing:1.5px; color:var(--ev); margin-bottom:16px; border-left:4px solid var(--lime); padding-left:10px; }
+        .chart-wrap { position:relative; height:260px; }
+
+        /* ── TOOLBAR ── */
+        .toolbar { background:var(--white); border:1px solid var(--border); border-radius:4px; border-left:5px solid var(--ev); padding:14px 20px; display:flex; align-items:center; gap:10px; margin-bottom:20px; flex-wrap:wrap; }
+        .toolbar-label { font-size:9px; font-weight:800; text-transform:uppercase; letter-spacing:2px; color:var(--ev); margin-right:4px; }
+        .toolbar select { padding:7px 10px; border:1px solid var(--border); border-radius:3px; font-size:12px; font-family:inherit; color:var(--night); cursor:pointer; outline:none; background:white; }
+        .toolbar select:focus { border-color:var(--ev); }
+        .toolbar-spacer { flex:1; min-width:0; }
+        .btn-add { background:var(--ev); color:var(--lime); border:none; border-radius:3px; padding:9px 18px; font-size:10px; font-weight:800; letter-spacing:1.5px; text-transform:uppercase; cursor:pointer; white-space:nowrap; transition:background 0.15s; }
+        .btn-add:hover { background:var(--ev-dark); }
+
+        /* ── TABLE ── */
+        .table-card { background:var(--white); border:1px solid var(--border); border-radius:4px; overflow:hidden; }
+        .table-header { padding:14px 20px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; background:var(--night); }
+        .table-header h2 { font-size:10px; font-weight:800; text-transform:uppercase; letter-spacing:2px; color:var(--lime); }
+        .item-count { font-size:11px; color:rgba(255,255,255,0.4); }
+        table { width:100%; border-collapse:collapse; }
+        thead th { text-align:left; padding:10px 14px; font-size:9px; font-weight:800; text-transform:uppercase; letter-spacing:1.5px; color:#999; background:#FAFAFA; border-bottom:1px solid var(--border); white-space:nowrap; }
+        tbody tr { border-bottom:1px solid var(--border); transition:background 0.12s; }
+        tbody tr:last-child { border-bottom:none; }
+        tbody tr:hover { background:var(--ev-light); }
+        tbody tr.is-mine { border-left:4px solid var(--lime); }
+        tbody td { padding:11px 14px; font-size:13px; vertical-align:middle; }
+        .action-text { font-weight:600; max-width:360px; line-height:1.4; color:var(--night); }
+        .action-sub  { font-size:11px; color:#999; margin-top:3px; line-height:1.4; }
+        .owner-name  { font-size:12px; font-weight:700; white-space:nowrap; color:var(--ev); }
+        .cat-badge { display:inline-flex; padding:2px 7px; border-radius:2px; font-size:9px; font-weight:800; letter-spacing:0.8px; text-transform:uppercase; white-space:nowrap; background:var(--ev-light); color:var(--ev); border:1px solid rgba(0,94,96,0.2); }
+        .pill { display:inline-flex; align-items:center; padding:3px 9px; border-radius:2px; font-size:9px; font-weight:800; letter-spacing:0.8px; text-transform:uppercase; white-space:nowrap; }
+        .pill-open       { background:var(--open-bg);       color:var(--open); }
+        .pill-inprogress { background:var(--inprogress-bg); color:var(--ev); }
+        .pill-done       { background:var(--done-bg);       color:var(--done); }
+        .pill-deferred   { background:var(--deferred-bg);   color:var(--deferred); border:1px solid var(--border); }
+        .tier-badge { display:inline-flex; align-items:center; gap:5px; padding:3px 8px; border-radius:2px; font-size:9px; font-weight:800; letter-spacing:0.5px; white-space:nowrap; }
+        .tier-badge::before { content:''; width:6px; height:6px; border-radius:50%; flex-shrink:0; }
+        .tier-1 { background:var(--t1-bg); color:var(--t1); } .tier-1::before { background:var(--t1); }
+        .tier-2 { background:var(--t2-bg); color:var(--t2); } .tier-2::before { background:var(--t2); }
+        .tier-3 { background:var(--t3-bg); color:var(--t3); } .tier-3::before { background:var(--t3); }
+        .tier-4 { background:var(--t4-bg); color:var(--t4); border:1px solid var(--border); } .tier-4::before { background:var(--t4); }
+        .esc-flag { font-size:13px; }
+        tbody tr.is-escalated { border-left:4px solid var(--red) !important; background:rgba(192,57,43,0.03); }
+        .esc-badge { display:inline-flex; align-items:center; gap:3px; padding:2px 7px; border-radius:2px; font-size:9px; font-weight:800; letter-spacing:0.8px; text-transform:uppercase; background:rgba(192,57,43,0.12); color:var(--red); border:1px solid rgba(192,57,43,0.3); margin-left:6px; vertical-align:middle; }
+        .source-badge { display:inline-flex; align-items:center; padding:1px 5px; border-radius:2px; font-size:8px; font-weight:800; letter-spacing:0.8px; text-transform:uppercase; white-space:nowrap; vertical-align:middle; margin-right:5px; }
+        .source-vault  { background:rgba(0,94,96,0.10);   color:var(--ev);    border:1px solid rgba(0,94,96,0.20); }
+        .source-ap     { background:rgba(230,126,34,0.10); color:var(--amber); border:1px solid rgba(230,126,34,0.25); }
+        .source-manual { background:#F4F6F5; color:#999; border:1px solid var(--border); }
+        .source-recur  { background:rgba(200,255,8,0.20); color:#4a6b00; border:1px solid rgba(122,160,8,0.45); }
+        .source-xyleme { background:rgba(52,152,219,0.10); color:#2471A7; border:1px solid rgba(52,152,219,0.30); }
+        .origin-badge { display:inline-flex; align-items:center; gap:3px; padding:2px 6px; border-radius:2px; font-size:9px; font-weight:700; letter-spacing:0.5px; text-transform:uppercase; white-space:nowrap; background:#F4F6F5; color:#666; border:1px solid var(--border); margin-left:4px; }
+        .date-text    { font-size:11px; color:#999; white-space:nowrap; }
+        .date-overdue { color:var(--red); font-weight:700; }
+        .date-soon { color:var(--amber); font-weight:700; }
+        .date-ok { color:#27AE60; font-weight:600; }
+        .status-select { padding:5px 8px; border:1px solid var(--border); border-radius:3px; font-size:11px; font-family:inherit; cursor:pointer; outline:none; background:white; }
+        .status-select:focus { border-color:var(--ev); }
+        .row-actions { display:flex; gap:6px; }
+        .btn-edit,.btn-delete { background:none; border:1px solid var(--border); border-radius:3px; padding:5px 10px; font-size:10px; font-weight:700; letter-spacing:0.5px; text-transform:uppercase; cursor:pointer; transition:all 0.15s; white-space:nowrap; }
+        .btn-edit   { color:#999; }
+        .btn-edit:hover  { border-color:var(--ev);  color:var(--ev);  background:var(--ev-light); }
+        .btn-delete { color:#bbb; }
+        .btn-delete:hover     { border-color:var(--red); color:var(--red); background:rgba(192,57,43,0.06); }
+        .btn-delete.confirming { border-color:var(--red); color:var(--red); background:rgba(192,57,43,0.1); font-weight:900; }
+
+        /* ── MODAL ── */
+        .modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.55); z-index:200; align-items:center; justify-content:center; }
+        .modal-overlay.active { display:flex; }
+        .modal { background:white; border-radius:4px; border-top:4px solid var(--lime); padding:32px; width:100%; max-width:560px; max-height:92vh; overflow-y:auto; box-shadow:0 24px 60px rgba(0,0,0,0.25); }
+        .modal-title { font-size:14px; font-weight:900; text-transform:uppercase; letter-spacing:1px; color:var(--ev); margin-bottom:24px; border-left:5px solid var(--lime); padding-left:12px; }
+        .form-row { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+        .form-group textarea { min-height:72px; resize:vertical; }
+        .form-group.checkbox-group { display:flex; align-items:center; gap:10px; padding-top:8px; }
+        .form-group.checkbox-group input[type="checkbox"] { width:18px; height:18px; cursor:pointer; accent-color:var(--ev); }
+        .form-group.checkbox-group label { font-size:12px; font-weight:700; text-transform:none; letter-spacing:0; color:var(--body); margin:0; cursor:pointer; }
+        .modal-footer { display:flex; gap:10px; justify-content:flex-end; margin-top:24px; }
+        .btn-cancel { padding:10px 20px; border:1px solid var(--border); background:white; border-radius:3px; font-size:11px; font-weight:700; letter-spacing:0.5px; text-transform:uppercase; cursor:pointer; color:var(--body); }
+        .btn-cancel:hover { background:var(--bg); }
+        .btn-save { padding:10px 24px; background:var(--ev); color:var(--lime); border:none; border-radius:3px; font-size:11px; font-weight:800; letter-spacing:1.5px; text-transform:uppercase; cursor:pointer; transition:background 0.15s; }
+        .btn-save:hover:not(:disabled) { background:var(--ev-dark); }
+        .btn-save:disabled { opacity:0.5; cursor:not-allowed; }
+
+        /* ── UTIL ── */
+        .empty-state { text-align:center; padding:60px 20px; color:#999; }
+        .empty-state h3 { font-size:13px; font-weight:800; text-transform:uppercase; letter-spacing:1px; color:var(--ev); margin-bottom:8px; }
+        .loading { text-align:center; padding:48px; color:#999; font-size:13px; }
+        .toast { position:fixed; bottom:24px; right:24px; background:var(--night); color:var(--white); padding:12px 20px; border-radius:3px; font-size:12px; font-weight:700; opacity:0; transform:translateY(8px); transition:all 0.25s; z-index:400; pointer-events:none; max-width:320px; }
+        .toast.show { opacity:1; transform:translateY(0); }
+        .toast.success { border-left:4px solid var(--lime); }
+        .toast.error   { border-left:4px solid var(--red); }
+
+        /* ── ADMIN TAB ── */
+        .admin-section{background:var(--white);border:1px solid var(--border);border-radius:4px;margin-bottom:20px;overflow:hidden;}.admin-section-header{padding:12px 18px;background:var(--night);color:var(--white);font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:1.5px;display:flex;align-items:center;justify-content:space-between;}.admin-section-body{padding:18px;}.admin-table{width:100%;border-collapse:collapse;font-size:12px;}.admin-table th{text-align:left;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:0.5px;color:#999;padding:6px 10px;border-bottom:2px solid var(--border);}.admin-table td{padding:10px;border-bottom:1px solid var(--border);vertical-align:middle;}.admin-table tr:last-child td{border-bottom:none;}.admin-table tr:hover td{background:var(--bg);}.admin-select{font-size:11px;padding:4px 8px;border:1px solid var(--border);border-radius:3px;background:var(--white);color:var(--night);}.admin-btn{font-size:10px;font-weight:700;padding:4px 10px;border-radius:3px;border:1px solid var(--border);background:var(--white);cursor:pointer;color:var(--body);}.admin-btn:hover{background:var(--bg);}.admin-btn-red{border-color:rgba(192,57,43,0.3);color:var(--red);}.admin-btn-red:hover{background:rgba(192,57,43,0.06);}.dvli-weights-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;}.weight-field{display:flex;flex-direction:column;gap:4px;}.weight-field label{font-size:10px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:0.3px;}.weight-field input{padding:6px 8px;border:1px solid var(--border);border-radius:3px;font-size:13px;font-weight:700;color:var(--night);width:100%;box-sizing:border-box;}.weight-field input:focus{outline:none;border-color:var(--ev);}.status-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;}.status-card{background:var(--bg);border:1px solid var(--border);border-radius:3px;padding:14px;text-align:center;}.status-val{font-size:28px;font-weight:900;color:var(--night);line-height:1;margin-bottom:4px;}.status-lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:#999;}.director-toggle{font-size:10px;font-weight:800;padding:5px 12px;border-radius:3px;border:1px solid rgba(200,255,8,0.4);background:rgba(200,255,8,0.1);color:var(--lime);cursor:pointer;letter-spacing:0.5px;text-transform:uppercase;margin-right:8px;}.director-toggle.active{background:var(--lime);color:var(--night);border-color:var(--lime);}.badge-pw{font-size:9px;font-weight:800;padding:2px 6px;border-radius:2px;background:rgba(230,126,34,0.12);color:var(--amber);border:1px solid rgba(230,126,34,0.3);}.badge-ok{font-size:9px;font-weight:800;padding:2px 6px;border-radius:2px;background:rgba(39,174,96,0.1);color:var(--done);border:1px solid rgba(39,174,96,0.3);}
+
+        /* ── DVLI ── */
+        .dvli-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; }
+        .dvli-card { background:var(--white); border:1px solid var(--border); border-radius:4px; overflow:hidden; }
+        .dvli-card-header { padding:12px 16px; background:var(--night); display:flex; align-items:center; justify-content:space-between; }
+        .dvli-card-name { font-size:11px; font-weight:900; text-transform:uppercase; letter-spacing:1.5px; color:var(--white); }
+        .dvli-card-badge { font-size:9px; font-weight:800; text-transform:uppercase; letter-spacing:0.5px; padding:2px 7px; border-radius:2px; }
+        .dvli-card-body { padding:18px 20px; }
+        .dvli-score { font-size:52px; font-weight:900; line-height:1; }
+        .dvli-gauge-wrap { position:relative; height:10px; background:var(--border); border-radius:5px; margin-bottom:4px; overflow:visible; }
+        .dvli-gauge-fill { height:100%; border-radius:5px; transition:width 0.4s; }
+        .dvli-gauge-mark { position:absolute; top:-4px; width:2px; height:18px; background:rgba(0,0,0,0.25); border-radius:1px; }
+        .dvli-gauge-scale { font-size:9px; color:#bbb; margin-bottom:14px; position:relative; height:12px; }
+        .dvli-components { border-top:1px solid var(--border); padding-top:12px; margin-top:14px; }
+        .dvli-comp-row { display:flex; align-items:center; gap:8px; margin-bottom:7px; }
+        .dvli-comp-row:last-child { margin-bottom:0; }
+        .dvli-comp-label { font-size:10px; font-weight:700; color:#888; width:90px; flex-shrink:0; }
+        .dvli-comp-bar-wrap { flex:1; height:5px; background:var(--border); border-radius:3px; overflow:hidden; }
+        .dvli-comp-bar { height:100%; border-radius:3px; transition:width 0.3s; }
+        .dvli-comp-val { font-size:10px; font-weight:700; color:var(--night); width:36px; text-align:right; flex-shrink:0; }
+        .dvli-card-sub { font-size:10px; color:#999; margin-top:10px; padding-top:10px; border-top:1px solid var(--border); }
+        .dvli-summary { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-bottom:20px; }
+        .dvli-summary-card { background:var(--white); border:1px solid var(--border); border-radius:4px; padding:16px 20px; text-align:center; }
+        .dvli-summary-val { font-size:36px; font-weight:900; line-height:1; margin-bottom:4px; }
+        .dvli-summary-label { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; color:#999; }
+
+        /* ── WORKLOAD ── */
+        .wl-section { background:var(--white); border:1px solid var(--border); border-radius:4px; margin-bottom:16px; overflow:hidden; }
+        .wl-section-header { padding:12px 20px; background:var(--night); display:flex; align-items:center; justify-content:space-between; }
+        .wl-section-title { font-size:10px; font-weight:800; text-transform:uppercase; letter-spacing:2px; color:var(--lime); }
+        .wl-section-body { padding:20px; }
+        .t1-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; }
+        .t1-card { background:var(--bg); border-radius:3px; padding:14px 16px; border:1px solid var(--border); }
+        .t1-card-label { font-size:9px; font-weight:800; text-transform:uppercase; letter-spacing:1.5px; color:#999; margin-bottom:6px; }
+        .t1-card-value { font-size:28px; font-weight:900; color:var(--night); line-height:1; }
+        .t1-card-sub { font-size:10px; color:#999; margin-top:4px; }
+        .capacity-gauge { display:flex; align-items:center; gap:16px; margin-bottom:20px; }
+        .gauge-track { flex:1; height:10px; background:var(--border); border-radius:5px; overflow:hidden; }
+        .gauge-fill { height:100%; border-radius:5px; transition:width 0.3s; }
+        .gauge-fill-ok   { background:var(--ev); }
+        .gauge-fill-warn { background:var(--amber); }
+        .gauge-fill-full { background:var(--red); }
+        .gauge-label { font-size:12px; font-weight:700; white-space:nowrap; min-width:120px; }
+        .gantt-wrap { overflow-x:auto; }
+        .gantt-row { display:flex; align-items:center; gap:10px; padding:5px 0; border-bottom:1px solid var(--border); min-height:34px; }
+        .gantt-row:last-child { border-bottom:none; }
+        .gantt-label { width:210px; flex-shrink:0; font-size:11px; font-weight:600; color:var(--night); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+        .gantt-track { flex:1; position:relative; height:22px; background:#F8F9F8; border-radius:2px; min-width:420px; overflow:hidden; }
+        .gantt-bar { position:absolute; top:1px; height:20px; border-radius:2px; display:flex; align-items:center; padding:0 6px; font-size:9px; font-weight:700; color:white; white-space:nowrap; overflow:hidden; min-width:4px; }
+        .gantt-bar-ap     { background:var(--amber); }
+        .gantt-bar-vault  { background:var(--ev); }
+        .gantt-bar-manual { background:#888; }
+        .gantt-today { position:absolute; top:0; bottom:0; width:2px; background:var(--red); opacity:0.8; z-index:2; }
+        .gantt-axis { position:relative; height:18px; margin-left:220px; margin-bottom:3px; }
+        .gantt-axis-label { position:absolute; font-size:9px; color:#999; font-weight:600; transform:translateX(-50%); }
+        .capacity-info { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-top:16px; }
+        .cap-info-card { background:var(--bg); border-radius:3px; padding:12px 14px; border:1px solid var(--border); }
+        .cap-info-label { font-size:9px; font-weight:800; text-transform:uppercase; letter-spacing:1px; color:#999; margin-bottom:4px; }
+        .cap-info-value { font-size:15px; font-weight:800; color:var(--night); }
+        .queue-count { font-size:36px; font-weight:900; color:var(--ev); line-height:1; }
+        .queue-sub { font-size:12px; color:#999; margin-top:2px; }
+        /* ── DISPLACEMENT ── */
+        .disp-path { border:1px solid var(--border); border-radius:3px; padding:16px; margin-bottom:12px; }
+        .disp-path-label { font-size:10px; font-weight:800; text-transform:uppercase; letter-spacing:1px; color:var(--ev); margin-bottom:6px; }
+        .disp-card { border:1px solid var(--border); border-radius:3px; padding:12px 14px; margin-bottom:8px; cursor:pointer; transition:all 0.15s; }
+        .disp-card:hover { border-color:var(--amber); background:rgba(230,126,34,0.04); }
+        .disp-card.selected { border-color:var(--amber); background:rgba(230,126,34,0.08); }
+        .disp-card-source { font-size:9px; font-weight:800; text-transform:uppercase; letter-spacing:0.8px; color:var(--amber); margin-bottom:3px; }
+        .disp-card-text { font-size:12px; font-weight:600; color:var(--night); line-height:1.4; margin-bottom:3px; }
+        .disp-card-meta { font-size:10px; color:#999; }
+        .wip-over-badge { display:inline-flex; align-items:center; padding:2px 6px; border-radius:2px; font-size:8px; font-weight:800; letter-spacing:0.5px; text-transform:uppercase; background:rgba(230,126,34,0.12); color:var(--amber); border:1px solid rgba(230,126,34,0.3); margin-left:5px; vertical-align:middle; }
+
+        @media (max-width:900px) { .charts-grid { grid-template-columns:1fr; } }
+        @media (max-width:768px) { .main { padding:20px 16px; } header { padding:0 16px; } .tab-nav { padding:0 16px; } }
+        @media (max-width:600px) { .stats-grid { grid-template-columns:1fr 1fr; } .form-row { grid-template-columns:1fr; } }
+    
+        /* Feedback */
+        .feedback-btn { position: fixed; bottom: 24px; right: 24px; background: var(--ev); color: var(--white); border: none; border-radius: 20px; padding: 8px 18px; font-size: 12px; font-weight: 600; cursor: pointer; z-index: 9999; display: flex; align-items: center; gap: 6px; box-shadow: 0 2px 10px rgba(0,0,0,0.25); transition: background 0.2s; }
+        .feedback-btn:hover { background: var(--ev-dark); }
+        .feedback-type-toggle { display: flex; gap: 8px; margin-bottom: 14px; }
+        .feedback-type-btn { flex: 1; padding: 9px; border: 2px solid var(--border); border-radius: 6px; background: var(--white); cursor: pointer; font-size: 13px; font-weight: 600; transition: all 0.2s; }
+        .feedback-type-btn.active-bug { border-color: var(--red); background: var(--open-bg); color: var(--red); }
+        .feedback-type-btn.active-feedback { border-color: var(--ev); background: rgba(0,94,96,0.08); color: var(--ev); }
+        .feedback-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        .feedback-table th { text-align: left; padding: 8px 12px; background: var(--bg); border-bottom: 2px solid var(--border); font-weight: 600; color: var(--body); }
+        .feedback-table td { padding: 8px 12px; border-bottom: 1px solid var(--border); vertical-align: top; }
+        .feedback-table tr.resolved-row td { opacity: 0.45; }
+        .badge-bug { background: var(--open-bg); color: var(--red); border: 1px solid var(--red); padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 700; white-space: nowrap; }
+        .badge-feedback-type { background: rgba(0,94,96,0.1); color: var(--ev); border: 1px solid var(--ev); padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 700; white-space: nowrap; }
+        .admin-notif-badge { background: var(--red); color: white; border-radius: 50%; width: 18px; height: 18px; font-size: 10px; display: none; align-items: center; justify-content: center; margin-left: 6px; font-weight: 700; flex-shrink: 0; }
+</style>
+    <script defer src="https://umami-patn9x71l-jim-s-projects4.vercel.app/script.js" data-website-id="71589b16-27b7-4ac8-b02c-c9f2c22240f6"></script>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-screen">
+    <div class="login-card">
+        <div class="login-logo">
+            <img src="images/Orion LOGO.png?v=3" alt="ORiON">
+            <div>
+                <div class="login-logo-name">ORiON</div>
+                <div class="login-logo-sub">OFS Readiness, Intelligence &amp;<br>Operations Navigator</div>
+            </div>
+        </div>
+        <h2>Sign In</h2>
+        <p>Use your GE Vernova email and the password provided by your ORiON Administrator.</p>
+        <div class="form-group">
+            <label for="login-email">Email Address</label>
+            <input type="email" id="login-email" placeholder="you@gevernova.com" autocomplete="email">
+        </div>
+        <div class="form-group">
+            <label for="login-password">Password</label>
+            <div class="pw-wrap">
+                <input type="password" id="login-password" placeholder="••••••••" autocomplete="current-password">
+                <button type="button" class="pw-toggle" onclick="togglePw('login-password',this)" aria-label="Show password" tabindex="-1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
+            </div>
+        </div>
+        <button class="btn-primary" id="btn-login">Sign In</button>
+        <div class="login-error" id="login-error"></div>
+        <div style="text-align:center;margin-top:14px;">
+            <a href="#" onclick="showForgotPassword();return false;" style="font-size:11px;color:var(--ev);text-decoration:none;font-weight:600;">Forgot password?</a>
+        </div>
+        <div id="forgot-pw-form" style="display:none;margin-top:16px;border-top:1px solid var(--border);padding-top:16px;">
+            <div style="font-size:12px;font-weight:700;color:var(--night);margin-bottom:10px;">Reset Your Password</div>
+            <div class="form-group">
+                <label class="form-label">Email Address</label>
+                <input type="email" id="forgot-email" class="form-input" placeholder="your@gevernova.com">
+            </div>
+            <button class="btn-primary" onclick="handleForgotPassword()" style="margin-top:4px;">Send Reset Link</button>
+            <div id="forgot-result" style="font-size:11px;color:var(--ev);margin-top:10px;text-align:center;min-height:16px;"></div>
+            <div style="text-align:center;margin-top:8px;"><a href="#" onclick="hideForgotPassword();return false;" style="font-size:11px;color:#999;text-decoration:none;">← Back to sign in</a></div>
+        </div>
+    </div>
+</div>
+
+<!-- DASHBOARD -->
+<div id="dashboard">
+    <header>
+        <div class="header-brand">
+            <div class="header-logo"><img src="images/Orion LOGO.png" alt="ORiON"></div>
+            <span class="header-title">ORiON</span>
+            <div class="header-divider"></div>
+            <span class="header-subtitle">OFS Training</span>
+        </div>
+        <div class="header-right" style="flex-direction:column;align-items:flex-end;gap:3px;">
+            <div style="display:flex;align-items:center;gap:14px;">
+                <span class="header-user"><strong id="header-name">—</strong><span class="role-badge" id="header-role"></span></span>
+                <button class="director-toggle" id="btn-director-toggle" style="display:none;" onclick="toggleDirectorView()">Director View</button>
+                <button class="btn-signout" id="btn-signout">Sign Out</button>
+            </div>
+            <span class="header-version">BETA &middot; v2.0 &middot; Build 2026.07</span>
+        </div>
+    </header>
+
+    <!-- TAB NAV -->
+    <div class="tab-nav">
+        <button class="tab-btn active" data-tab="dvli">DVLI Overview</button>
+        <button class="tab-btn" data-tab="admin" id="tab-btn-admin" style="display:none;">Admin<span class="admin-notif-badge" id="adminFeedbackBadge"></span></button>
+        <button class="tab-btn" data-tab="exec">Exec Dashboard</button>
+        <button class="tab-btn" data-tab="workload">Workload</button>
+        <button class="tab-btn" data-tab="actions">Action Items</button>
+    </div>
+
+    <!-- ADMIN TAB -->
+    <div id="tab-admin" class="tab-panel"><div class="main"><div id="admin-container"><div class="loading">Loading…</div></div></div></div>
+
+    <!-- DVLI TAB -->
+    <div id="tab-dvli" class="tab-panel active">
+        <div class="main">
+            <div id="dvli-container"><div class="loading">Calculating workload index…</div></div>
+        </div>
+    </div>
+
+    <!-- EXEC TAB -->
+    <div id="tab-exec" class="tab-panel">
+        <div class="main">
+
+            <!-- Owner filter for exec view -->
+            <div class="exec-controls">
+                <span class="exec-controls-label">OFS Training — Action Intelligence</span>
+                <div class="exec-owner-wrap">
+                    <label for="exec-filter-owner">View</label>
+                    <select id="exec-filter-owner">
+                        <option value="">All Owners</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Stats -->
+            <div class="stats-section">
+                <div class="stats-row-label">Status</div>
+                <div class="stats-grid">
+                    <div class="stat-card s-open">     <div class="stat-label">Open</div>        <div class="stat-value" id="stat-open">—</div></div>
+                    <div class="stat-card s-progress">  <div class="stat-label">In Progress</div> <div class="stat-value" id="stat-progress">—</div></div>
+                    <div class="stat-card s-done">      <div class="stat-label">Done</div>        <div class="stat-value" id="stat-done">—</div></div>
+                    <div class="stat-card s-deferred">  <div class="stat-label">Deferred</div>   <div class="stat-value" id="stat-deferred">—</div></div>
+                </div>
+                <div class="stats-row-label">Tier</div>
+                <div class="stats-grid">
+                    <div class="stat-card t1"><div class="stat-label">Tier 1 — Critical</div>  <div class="stat-value" id="stat-t1">—</div></div>
+                    <div class="stat-card t2"><div class="stat-label">Tier 2 — Important</div> <div class="stat-value" id="stat-t2">—</div></div>
+                    <div class="stat-card t3"><div class="stat-label">Tier 3 — Standard</div>  <div class="stat-value" id="stat-t3">—</div></div>
+                    <div class="stat-card t4"><div class="stat-label">Tier 4 — Watch</div>     <div class="stat-value" id="stat-t4">—</div></div>
+                </div>
+            </div>
+
+            <!-- Charts -->
+            <div class="charts-grid">
+                <div class="chart-card">
+                    <div class="chart-title">Active Items by Owner</div>
+                    <div class="chart-wrap"><canvas id="chart-owner"></canvas></div>
+                </div>
+                <div class="chart-card">
+                    <div class="chart-title">Tier Distribution</div>
+                    <div class="chart-wrap"><canvas id="chart-tier"></canvas></div>
+                </div>
+                <div class="chart-card">
+                    <div class="chart-title">Items by Category</div>
+                    <div class="chart-wrap"><canvas id="chart-category"></canvas></div>
+                </div>
+                <div class="chart-card">
+                    <div class="chart-title">Open Item Aging</div>
+                    <div class="chart-wrap"><canvas id="chart-aging"></canvas></div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- ACTION ITEMS TAB -->
+    <div id="tab-actions" class="tab-panel">
+        <div class="main">
+            <div class="toolbar">
+                <span class="toolbar-label">Filter</span>
+                <select id="filter-owner"><option value="">All Owners</option></select>
+                <select id="filter-status">
+                    <option value="">All Statuses</option>
+                    <option>Open</option><option>In Progress</option>
+                    <option>Done</option><option>Deferred</option>
+                </select>
+                <select id="filter-tier">
+                    <option value="">All Tiers</option>
+                    <option value="Tier 1">Tier 1 — Critical</option>
+                    <option value="Tier 2">Tier 2 — Important</option>
+                    <option value="Tier 3">Tier 3 — Standard</option>
+                    <option value="Tier 4">Tier 4 — Watch</option>
+                </select>
+                <select id="filter-category">
+                    <option value="">All Categories</option>
+                    <option>Safety</option><option>Quality</option><option>Delivery</option>
+                    <option>Cost</option><option>People</option><option>Strategy</option>
+                </select>
+                <select id="filter-source">
+                    <option value="">All Sources</option>
+                    <option value="vault_import">Vault</option>
+                    <option value="ap_import">Action Plan</option>
+                    <option value="dashboard_created">Manual</option>
+                    <option value="recurring">Recurring</option>
+                </select>
+                <div class="toolbar-spacer"></div>
+                <button class="btn-add" id="btn-recurring" style="background:white;color:var(--ev);border:1px solid var(--ev);">↻ Recurring</button>
+                <button class="btn-add" id="btn-add-item">+ Add Action Item</button>
+            </div>
+
+            <div class="table-card">
+                <div class="table-header">
+                    <h2>Action Items</h2>
+                    <span class="item-count" id="item-count"></span>
+                </div>
+                <div id="table-container"><div class="loading">Loading action items…</div></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- WORKLOAD TAB -->
+<div id="tab-workload" class="tab-panel">
+    <div class="main">
+        <div class="exec-controls" style="margin-bottom:20px;">
+            <span class="exec-controls-label">PLL Workload &amp; Capacity View</span>
+            <div class="exec-owner-wrap">
+                <label for="wl-filter-pll">PLL</label>
+                <select id="wl-filter-pll"><option value="">Select a PLL…</option><option value="__all__">All PLLs</option></select>
+            </div>
+        </div>
+        <div id="workload-container">
+            <div class="empty-state"><h3>Select a PLL above</h3><p>Choose a PLL to view their workload and capacity.</p></div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modal-overlay">
+    <div class="modal">
+        <div class="modal-title" id="modal-title">Add Action Item</div>
+        <div class="form-group">
+            <label for="modal-action">Action Item *</label>
+            <textarea id="modal-action" placeholder="Describe the action…"></textarea>
+        </div>
+        <div class="form-row">
+            <div class="form-group">
+                <label for="modal-status">Status</label>
+                <select id="modal-status">
+                    <option>Open</option><option>In Progress</option>
+                    <option>Done</option><option>Deferred</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="modal-tier">Tier</label>
+                <select id="modal-tier">
+                    <option value="Tier 1">Tier 1 — Critical</option>
+                    <option value="Tier 2">Tier 2 — Important</option>
+                    <option value="Tier 3" selected>Tier 3 — Standard</option>
+                    <option value="Tier 4">Tier 4 — Watch</option>
+                </select>
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="form-group">
+                <label for="modal-category">Category</label>
+                <select id="modal-category">
+                    <option value="">— Select —</option>
+                    <option>Safety</option><option>Quality</option><option>Delivery</option>
+                    <option>Cost</option><option>People</option><option>Strategy</option>
+                </select>
+            </div>
+            <div class="form-group" id="owner-field-wrap">
+                <label for="modal-owner">Owner</label>
+                <select id="modal-owner"></select>
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="modal-next-step">Next Step</label>
+            <input type="text" id="modal-next-step" placeholder="What happens next?">
+        </div>
+        <div class="form-row">
+            <div class="form-group">
+                <label for="modal-start">Start Date *</label>
+                <input type="date" id="modal-start">
+            </div>
+            <div class="form-group">
+                <label for="modal-due">Due Date</label>
+                <input type="date" id="modal-due">
+            </div>
+        </div>
+        <div class="form-row" id="recur-row">
+            <div class="form-group">
+                <label for="modal-repeats">Repeats</label>
+                <select id="modal-repeats">
+                    <option value="">Does not repeat</option>
+                    <option value="weekly">Weekly</option>
+                    <option value="biweekly">Every 2 weeks</option>
+                    <option value="monthly">Monthly</option>
+                </select>
+            </div>
+            <div class="form-group" style="display:flex;align-items:flex-end;padding-bottom:8px;">
+                <span id="recur-rule-text" style="font-size:11px;font-weight:700;color:var(--ev);"></span>
+            </div>
+        </div>
+        <div id="recur-ack-wrap" style="display:none;background:rgba(230,126,34,0.08);border:1px solid rgba(230,126,34,0.35);border-radius:3px;padding:12px 14px;margin-bottom:16px;">
+            <div style="font-size:12px;font-weight:800;color:var(--amber);margin-bottom:6px;">⚠ RECURRING <span class="recur-ack-tier"></span> ITEM</div>
+            <div style="font-size:11px;color:var(--body);line-height:1.5;margin-bottom:10px;" id="recur-ack-msg"></div>
+            <label style="display:flex;align-items:center;gap:8px;font-size:11px;font-weight:700;color:var(--night);cursor:pointer;margin:0;">
+                <input type="checkbox" id="recur-ack" style="width:15px;height:15px;accent-color:var(--amber);cursor:pointer;flex-shrink:0;">
+                <span>Yes — this really is <span class="recur-ack-tier"></span> work; keep it recurring at this tier.</span>
+            </label>
+        </div>
+        <div class="form-row">
+            <div class="form-group">
+                <label for="modal-duration">Duration (Days)</label>
+                <input type="number" id="modal-duration" placeholder="Optional — for capacity planning" min="1">
+            </div>
+            <div class="form-group">
+                <label for="modal-blocker">Blocker / Dependency</label>
+                <input type="text" id="modal-blocker" placeholder="Optional">
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="form-group">
+                <label for="modal-origin">Origin</label>
+                <select id="modal-origin">
+                    <option value="">— None —</option>
+                    <option value="meeting">Meeting</option>
+                    <option value="call">Call</option>
+                    <option value="visit">Visit</option>
+                    <option value="review">Review</option>
+                    <option value="email">Email</option>
+                    <option value="escalation">Escalation</option>
+                    <option value="self">Self</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="modal-notes">Notes</label>
+                <textarea id="modal-notes" placeholder="Optional context or updates…" style="min-height:56px"></textarea>
+            </div>
+        </div>
+        <div class="form-group checkbox-group">
+            <input type="checkbox" id="modal-escalation">
+            <label for="modal-escalation">Escalation needed — flag for leadership attention</label>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-cancel" id="btn-modal-cancel">Cancel</button>
+            <button class="btn-save"   id="btn-modal-save">Save Item</button>
+        </div>
+    </div>
+</div>
+
+<!-- PASSWORD CHANGE SCREEN -->
+<div id="pw-change-screen" style="display:none;min-height:100vh;align-items:center;justify-content:center;background:var(--ev);position:fixed;inset:0;z-index:999;">
+    <div class="login-card">
+        <div class="login-logo"><img src="images/Orion LOGO.png" alt="ORiON" style="height:56px;"></div>
+        <div style="font-size:18px;font-weight:900;color:var(--night);margin-bottom:6px;">Set Your Password</div>
+        <div style="font-size:12px;color:#666;margin-bottom:24px;">Welcome to ORiON. Please set a new password to get started.</div>
+        <div class="form-group">
+            <label class="form-label">New Password</label>
+            <div class="pw-wrap">
+                <input type="password" id="pw-new" class="form-input" placeholder="Minimum 8 characters">
+                <button type="button" class="pw-toggle" onclick="togglePw('pw-new',this)" aria-label="Show password" tabindex="-1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="form-label">Confirm Password</label>
+            <div class="pw-wrap">
+                <input type="password" id="pw-confirm" class="form-input" placeholder="Re-enter your password">
+                <button type="button" class="pw-toggle" onclick="togglePw('pw-confirm',this)" aria-label="Show password" tabindex="-1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
+            </div>
+        </div>
+        <button class="btn-login" id="btn-set-pw" onclick="handlePasswordChange()" style="margin-top:8px;">Set Password &amp; Continue</button>
+        <div class="login-error" id="pw-error" style="margin-top:12px;"></div>
+    </div>
+</div>
+
+<!-- WHAT'S NEW MODAL -->
+<div class="modal-overlay" id="brief-modal-overlay">
+    <div class="modal" style="max-width:540px;">
+        <div class="modal-title" id="brief-modal-title">What's New</div>
+        <div id="brief-modal-body"></div>
+        <div class="modal-footer">
+            <button class="btn-save" onclick="closeBriefModal()">Got it</button>
+        </div>
+    </div>
+</div>
+
+<!-- RELEASE NOTES MODAL (shown once per release, before the daily brief) -->
+<div class="modal-overlay" id="release-modal-overlay">
+    <div class="modal" style="max-width:540px;">
+        <div class="modal-title" id="release-modal-title">What's New in ORION</div>
+        <div id="release-modal-body"></div>
+        <div class="modal-footer">
+            <button class="btn-save" onclick="closeReleaseModal()">Got it</button>
+        </div>
+    </div>
+</div>
+
+<!-- DISPLACEMENT MODAL -->
+<div class="modal-overlay" id="disp-modal-overlay">
+    <div class="modal" style="max-width:620px;">
+        <div class="modal-title" id="disp-modal-title">Tier 2 Capacity — Action Required</div>
+        <div id="disp-modal-body"></div>
+        <div class="modal-footer" id="disp-modal-footer"></div>
+    </div>
+</div>
+
+<!-- RECURRING SERIES MODAL -->
+<div class="modal-overlay" id="recur-modal-overlay">
+    <div class="modal" style="max-width:640px;">
+        <div class="modal-title">Recurring Items</div>
+        <div id="recur-modal-body"></div>
+        <div class="modal-footer">
+            <button class="btn-cancel" onclick="closeRecurModal()">Close</button>
+        </div>
+    </div>
+</div>
+
+<!-- REACTIVATION MODAL -->
+<div class="modal-overlay" id="react-modal-overlay">
+    <div class="modal" style="max-width:560px;">
+        <div class="modal-title">Deferred Items Waiting</div>
+        <div id="react-modal-body"></div>
+        <div class="modal-footer">
+            <button class="btn-cancel" onclick="closeReactivationModal()">Close</button>
+        </div>
+    </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+<script>
+// ─── CONFIG ───────────────────────────────────────
+const COMMAND_BOARD_URL = 'https://raw.githubusercontent.com/HLC-Training/command-board/main/board-data.json';
+
+const SUPABASE_URL      = 'https://czdkctjbejnwuopigxta.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN6ZGtjdGpiZWpud3VvcGlneHRhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODExODgxODAsImV4cCI6MjA5Njc2NDE4MH0.hjnZLhn90AGemUB27do-fJ5iVJOOObaYPkYLqFnoBGU';
+// ─────────────────────────────────────────────────
+
+const TIER_LABELS = {
+    'Tier 1':'Tier 1 — Critical',
+    'Tier 2':'Tier 2 — Important',
+    'Tier 3':'Tier 3 — Standard',
+    'Tier 4':'Tier 4 — Watch'
+};
+
+const GEV = {
+    teal:   '#005E60',
+    lime:   '#C8FF08',
+    red:    '#C0392B',
+    amber:  '#E67E22',
+    green:  '#27AE60',
+    gray:   '#888888',
+    light:  '#E6F2F2',
+    night:  '#212121',
+};
+
+const db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+let currentUser    = null;
+let currentProfile = null;
+let allItems       = [];
+let allUsers       = [];
+let editingItemId  = null;
+let charts         = {};
+let cbData         = null;
+let pendingItemPayload = null;
+let dispModalMode      = 'add'; // 'add' | 'review'
+
+// ── HELPERS ───────────────────────────────────────
+function pillClass(s) {
+    const m = {'Open':'open','In Progress':'inprogress','Done':'done','Deferred':'deferred'};
+    return 'pill pill-' + (m[s] || 'open');
+}
+function tierClass(t) {
+    const m = {'Tier 1':'tier-1','Tier 2':'tier-2','Tier 3':'tier-3','Tier 4':'tier-4'};
+    return 'tier-badge ' + (m[t] || 'tier-3');
+}
+function formatDate(d) {
+    if (!d) return '—';
+    const [y,m,dd] = d.split('-');
+    return `${parseInt(m)}/${parseInt(dd)}/${y}`;
+}
+function esc(s) {
+    if (!s) return '';
+    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function showToast(msg, type='success') {
+    const t = document.getElementById('toast');
+    t.textContent = msg; t.className = `toast ${type} show`;
+    setTimeout(() => { t.className = 'toast'; }, 3000);
+}
+const PW_EYE     = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>';
+const PW_EYE_OFF = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>';
+function togglePw(inputId, btn) {
+    const input = document.getElementById(inputId);
+    const show  = input.type === 'password';
+    input.type = show ? 'text' : 'password';
+    btn.innerHTML = show ? PW_EYE_OFF : PW_EYE;
+    btn.setAttribute('aria-label', show ? 'Hide password' : 'Show password');
+    input.focus();
+}
+function getAge(dateStr) {
+    if (!dateStr) return 0;
+    const d = new Date(dateStr + 'T00:00:00');
+    const today = new Date(); today.setHours(0,0,0,0);
+    return Math.floor((today - d) / 86400000);
+}
+
+// ── TABS ──────────────────────────────────────────
+document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+        if (btn.dataset.tab === 'admin')    renderAdminTab();
+        if (btn.dataset.tab === 'dvli')     renderDVLI();
+        if (btn.dataset.tab === 'exec')     renderExec();
+        if (btn.dataset.tab === 'workload') renderWorkload();
+    });
+});
+
+// ── AUTH ──────────────────────────────────────────
+document.getElementById('btn-login').addEventListener('click', handleLogin);
+
+    // Handle password recovery link clicks (from reset email)
+    db.auth.onAuthStateChange(async (event, session) => {
+        if (event === 'PASSWORD_RECOVERY' && session) {
+            currentUser = session.user;
+            document.getElementById('login-screen').style.display = 'none';
+            const pwScreen = document.getElementById('pw-change-screen');
+            pwScreen.querySelector('div[style*="font-size:18px"]').textContent = 'Reset Your Password';
+            pwScreen.querySelector('div[style*="font-size:12px"]').textContent = 'Enter and confirm your new password below.';
+            pwScreen.style.display = 'flex';
+        }
+    });
+document.getElementById('login-password').addEventListener('keydown', e => { if (e.key==='Enter') handleLogin(); });
+
+async function handleLogin() {
+    const email    = document.getElementById('login-email').value.trim();
+    const password = document.getElementById('login-password').value;
+    const errEl    = document.getElementById('login-error');
+    const btn      = document.getElementById('btn-login');
+    errEl.style.display = 'none';
+    btn.textContent = 'Signing in…'; btn.disabled = true;
+    const { data, error } = await db.auth.signInWithPassword({ email, password });
+    if (error) {
+        errEl.textContent = 'Incorrect email or password. Contact your ORiON Administrator if you need access.';
+        errEl.style.display = 'block';
+        btn.textContent = 'Sign In'; btn.disabled = false;
+        return;
+    }
+    await initDashboard(data.user);
+}
+
+document.getElementById('btn-signout').addEventListener('click', async () => {
+    await db.auth.signOut();
+    currentUser = currentProfile = null;
+    document.getElementById('dashboard').style.display    = 'none';
+    document.getElementById('login-screen').style.display = 'flex';
+});
+
+async function checkSession() {
+    const { data: { session } } = await db.auth.getSession();
+    if (session) await initDashboard(session.user);
+}
+
+// ── INIT ──────────────────────────────────────────
+async function initDashboard(user) {
+    currentUser = user;
+    const { data: profile } = await db.from('users').select('*').eq('id', user.id).single();
+    currentProfile = profile;
+
+    // First-login password change intercept
+    if (profile?.must_change_password) {
+        document.getElementById('login-screen').style.display  = 'none';
+        document.getElementById('pw-change-screen').style.display = 'flex';
+        return;
+    }
+
+    document.getElementById('header-name').textContent = profile?.name || user.email;
+    document.getElementById('header-role').textContent = profile?.role || '';
+    if (profile?.role === 'viewer') {
+        document.getElementById('btn-add-item').style.display = 'none';
+        document.getElementById('btn-recurring').style.display = 'none';
+    }
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('dashboard').style.display    = 'block';
+    // Reset filter selects
+    ['exec-filter-owner','filter-owner','filter-status','filter-tier','filter-category'].forEach(id => {
+        document.getElementById(id).value = '';
+    });
+    await Promise.all([loadUsers(), loadItems()]);
+    if (currentProfile?.role === 'admin') {
+        document.getElementById('tab-btn-admin').style.display = '';
+        document.getElementById('btn-director-toggle').style.display = '';
+    } else {
+        document.getElementById('tab-btn-admin').style.display = 'none';
+        document.getElementById('btn-director-toggle').style.display = 'none';
+    }
+    await loadSettings();
+    renderDVLI();
+    // Release notes take priority (once per release); the daily brief
+    // follows on dismissal, or runs directly when there's nothing new.
+    const releaseShown = await checkReleaseNotes();
+    if (!releaseShown) checkDailyBrief();
+    // Check for WIP overage flagged by sync scripts
+    if (currentProfile?.pending_wip_review && currentProfile?.role === 'pll') {
+        const _now = new Date(); _now.setHours(0,0,0,0);
+        const activeT2 = allItems.filter(i => i.owner_id === currentUser.id && isT2Working(i, _now));
+        if (activeT2.length > 5) {
+            pendingItemPayload = null;
+            dispModalMode = 'review';
+            showDisplacementModal(currentUser.id, activeT2);
+        } else {
+            // Overage already resolved — clear the flag
+            await db.from('users').update({ pending_wip_review: false }).eq('id', currentUser.id);
+        }
+    }
+}
+
+// ── DATA ──────────────────────────────────────────
+async function loadUsers() {
+    const { data } = await db.from('users').select('id, name, role').order('name');
+    allUsers = data || [];
+    // Only non-viewer users in dropdowns
+    const pllUsers = allUsers.filter(u => u.role !== 'viewer');
+
+    ['exec-filter-owner','filter-owner'].forEach(selId => {
+        const sel = document.getElementById(selId);
+        sel.innerHTML = '<option value="">All Owners</option>';
+        pllUsers.forEach(u => {
+            const o = document.createElement('option');
+            o.value = u.id; o.textContent = u.name; sel.appendChild(o);
+        });
+    });
+
+    const wlSel = document.getElementById('wl-filter-pll');
+    if (wlSel) {
+        const prev = wlSel.value;
+        wlSel.innerHTML = '<option value="">Select a PLL…</option><option value="__all__">All PLLs</option>';
+        pllUsers.forEach(u => {
+            const o = document.createElement('option');
+            o.value = u.id; o.textContent = u.name; wlSel.appendChild(o);
+        });
+        if (prev) wlSel.value = prev;
+    }
+
+    const mSel = document.getElementById('modal-owner');
+    mSel.innerHTML = '';
+    pllUsers.forEach(u => {
+        const o = document.createElement('option');
+        o.value = u.id; o.textContent = u.name; mSel.appendChild(o);
+    });
+}
+
+async function loadItems() {
+    const { data, error } = await db
+        .from('action_items')
+        .select('*, users(id, name)')
+        .order('priority', { ascending: true })
+        .order('due_date', { ascending: true, nullsFirst: false })
+        .order('created_date', { ascending: false });
+    if (error) { showToast('Failed to load action items.', 'error'); return; }
+    allItems = data || [];
+    renderExec();
+    renderTable();
+}
+
+// ── EXEC VIEW ─────────────────────────────────────
+function getExecItems() {
+    const ownerF = document.getElementById('exec-filter-owner').value;
+    return ownerF ? allItems.filter(i => i.owner_id === ownerF) : allItems;
+}
+
+function renderExec() {
+    const items = getExecItems();
+    // Stats
+    document.getElementById('stat-open').textContent     = items.filter(i => i.status === 'Open').length;
+    document.getElementById('stat-progress').textContent = items.filter(i => i.status === 'In Progress').length;
+    document.getElementById('stat-done').textContent     = items.filter(i => i.status === 'Done').length;
+    document.getElementById('stat-deferred').textContent = items.filter(i => i.status === 'Deferred').length;
+    document.getElementById('stat-t1').textContent = items.filter(i => i.priority === 'Tier 1').length;
+    document.getElementById('stat-t2').textContent = items.filter(i => i.priority === 'Tier 2').length;
+    document.getElementById('stat-t3').textContent = items.filter(i => i.priority === 'Tier 3').length;
+    document.getElementById('stat-t4').textContent = items.filter(i => i.priority === 'Tier 4').length;
+    // Charts
+    renderCharts(items);
+}
+
+document.getElementById('exec-filter-owner').addEventListener('change', renderExec);
+
+// ── CHARTS ────────────────────────────────────────
+function destroyChart(id) {
+    if (charts[id]) { charts[id].destroy(); delete charts[id]; }
+}
+
+function renderCharts(items) {
+    const active = items.filter(i => i.status === 'Open' || i.status === 'In Progress');
+    const open   = items.filter(i => i.status === 'Open');
+
+    // Chart 1 — By Owner (active items)
+    destroyChart('owner');
+    const ownerCounts = {};
+    allUsers.filter(u => u.role !== 'viewer').forEach(u => { ownerCounts[u.name] = 0; });
+    active.forEach(i => {
+        const name = i.users?.name || 'Unknown';
+        ownerCounts[name] = (ownerCounts[name] || 0) + 1;
+    });
+    const ownerEntries = Object.entries(ownerCounts).filter(([,v]) => v > 0).sort((a,b) => b[1]-a[1]);
+    charts['owner'] = new Chart(document.getElementById('chart-owner'), {
+        type: 'bar',
+        data: {
+            labels: ownerEntries.map(([k]) => k),
+            datasets: [{ data: ownerEntries.map(([,v]) => v), backgroundColor: GEV.teal, borderRadius: 3 }]
+        },
+        options: {
+            indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+                x: { grid: { color: '#F0F0F0' }, ticks: { font: { size: 11, family: 'Inter' } } },
+                y: { grid: { display: false }, ticks: { font: { size: 11, family: 'Inter' } } }
+            }
+        }
+    });
+
+    // Chart 3 — Tier Distribution (donut)
+    destroyChart('tier');
+    const tierCounts = {
+        'Tier 1': items.filter(i => i.priority === 'Tier 1').length,
+        'Tier 2': items.filter(i => i.priority === 'Tier 2').length,
+        'Tier 3': items.filter(i => i.priority === 'Tier 3').length,
+        'Tier 4': items.filter(i => i.priority === 'Tier 4').length,
+    };
+    charts['tier'] = new Chart(document.getElementById('chart-tier'), {
+        type: 'doughnut',
+        data: {
+            labels: ['Tier 1 — Critical','Tier 2 — Important','Tier 3 — Standard','Tier 4 — Watch'],
+            datasets: [{ data: Object.values(tierCounts), backgroundColor: [GEV.red, GEV.amber, GEV.teal, GEV.gray], borderWidth: 2, borderColor: '#fff' }]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'bottom', labels: { font: { size: 11, family: 'Inter' }, padding: 12 } }
+            },
+            cutout: '60%'
+        }
+    });
+
+    // Chart 4 — By Category (active items)
+    destroyChart('category');
+    const cats = ['Safety','Quality','Delivery','Cost','People','Strategy'];
+    const catCounts = cats.map(c => active.filter(i => i.category === c).length);
+    const uncategorized = active.filter(i => !i.category).length;
+    charts['category'] = new Chart(document.getElementById('chart-category'), {
+        type: 'bar',
+        data: {
+            labels: [...cats, 'Uncategorized'],
+            datasets: [{
+                data: [...catCounts, uncategorized],
+                backgroundColor: [...cats.map(() => GEV.teal), '#ccc'],
+                borderRadius: 3
+            }]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+                x: { grid: { display: false }, ticks: { font: { size: 10, family: 'Inter' } } },
+                y: { grid: { color: '#F0F0F0' }, ticks: { font: { size: 11, family: 'Inter' }, stepSize: 1 } }
+            }
+        }
+    });
+
+    // Chart 5 — Aging (open items by created_date age)
+    destroyChart('aging');
+    const ageBuckets = ['< 7 days','7 – 30 days','31 – 60 days','60+ days'];
+    const ageCounts  = [0,0,0,0];
+    open.forEach(i => {
+        const age = getAge(i.created_date);
+        if (age < 7)       ageCounts[0]++;
+        else if (age < 31) ageCounts[1]++;
+        else if (age < 61) ageCounts[2]++;
+        else               ageCounts[3]++;
+    });
+    charts['aging'] = new Chart(document.getElementById('chart-aging'), {
+        type: 'bar',
+        data: {
+            labels: ageBuckets,
+            datasets: [{
+                data: ageCounts,
+                backgroundColor: [GEV.green, GEV.amber, '#E87722', GEV.red],
+                borderRadius: 3
+            }]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+                x: { grid: { display: false }, ticks: { font: { size: 11, family: 'Inter' } } },
+                y: { grid: { color: '#F0F0F0' }, ticks: { font: { size: 11, family: 'Inter' }, stepSize: 1 } }
+            }
+        }
+    });
+}
+
+// ── TABLE ─────────────────────────────────────────
+function renderTable() {
+    const ownerF  = document.getElementById('filter-owner').value;
+    const statusF = document.getElementById('filter-status').value;
+    const tierF   = document.getElementById('filter-tier').value;
+    const catF    = document.getElementById('filter-category').value;
+    const sourceF = document.getElementById('filter-source').value;
+
+    let items = [...allItems];
+    if (ownerF)  items = items.filter(i => i.owner_id === ownerF);
+    if (sourceF) items = items.filter(i => i.source === sourceF);
+    if (statusF) {
+          items = items.filter(i => i.status === statusF);
+        } else {
+          items = items.filter(i => i.status !== 'Done');
+        }
+        document.getElementById('item-count').textContent = `${items.length} item${items.length!==1?'s':''}`;
+
+    const container = document.getElementById('table-container');
+    if (items.length === 0) {
+        container.innerHTML = `<div class="empty-state"><h3>No action items found</h3><p>Adjust your filters or add a new item above.</p></div>`;
+        return;
+    }
+
+    const isAdmin  = currentProfile?.role === 'admin';
+    const isViewer = currentProfile?.role === 'viewer';
+
+    // Compute which owners are over the Tier 2 WIP limit (working = in-window today)
+    const _today = new Date(); _today.setHours(0,0,0,0);
+    const t2CountByOwner = {};
+    allItems.filter(i => isT2Working(i, _today))
+        .forEach(i => { t2CountByOwner[i.owner_id] = (t2CountByOwner[i.owner_id] || 0) + 1; });
+    const wipOverOwners = new Set(Object.entries(t2CountByOwner).filter(([,c]) => c > 5).map(([id]) => id));
+
+    const rows = items.map(item => {
+        const isMine    = item.owner_id === currentUser?.id;
+        const canEdit   = (isAdmin || isMine) && !isViewer;
+        const ownerName = item.users?.name || 'Unknown';
+        const tierLabel = TIER_LABELS[item.priority] || item.priority;
+
+        let dueHtml = '<span class="date-text">—</span>';
+        if (item.due_date) {
+            const due = new Date(item.due_date + 'T00:00:00');
+            const today = new Date(); today.setHours(0,0,0,0);
+            const daysUntil = Math.ceil((due - today) / 86400000);
+            let dueCls = '', dueIcon = '';
+            if (item.status !== 'Done') {
+              if (daysUntil < 0)       { dueCls = ' date-overdue'; dueIcon = ' ⚠'; }
+              else if (daysUntil <= 7) { dueCls = ' date-soon';    dueIcon = ' ●'; }
+              else                     { dueCls = ' date-ok'; }
+            }
+            dueHtml = `<span class="date-text${dueCls}">${formatDate(item.due_date)}${dueIcon}</span>`;
+        }
+
+        const statusCell = canEdit
+            ? `<select class="status-select" data-id="${item.id}" onchange="quickStatus(this)">
+                <option ${item.status==='Open'?'selected':''}>Open</option>
+                <option ${item.status==='In Progress'?'selected':''}>In Progress</option>
+                <option ${item.status==='Done'?'selected':''}>Done</option>
+                <option ${item.status==='Deferred'?'selected':''}>Deferred</option>
+               </select>`
+            : `<span class="${pillClass(item.status)}">${esc(item.status)}</span>`;
+
+        const subLines = [
+            item.next_step ? `<span>→ ${esc(item.next_step)}</span>` : '',
+            item.blocker   ? `<span>⛔ ${esc(item.blocker)}</span>`  : '',
+            item.notes     ? `<span>${esc(item.notes)}</span>`       : '',
+        ].filter(Boolean).join(' &nbsp;·&nbsp; ');
+
+        const escFlag  = item.escalation_needed ? '<span class="esc-badge">⚠ ESCALATION</span>' : '';
+        const escRow   = item.escalation_needed ? ' is-escalated' : '';
+        const wipFlag  = (item.priority === 'Tier 2' && wipOverOwners.has(item.owner_id))
+            ? '<span class="wip-over-badge" title="WIP over limit">⚡ OVER LIMIT</span>' : '';
+        const originIcons = {
+            'meeting':    '📅 Meeting',
+            'call':       '📞 Call',
+            'visit':      '🏢 Visit',
+            'review':     '📋 Review',
+            'email':      '✉ Email',
+            'escalation': '🔺 Escalation',
+            'self':       '💡 Self',
+        };
+        const originBadge = item.origin && originIcons[item.origin]
+            ? `<span class="origin-badge">${originIcons[item.origin]}</span>`
+            : '';
+        const srcMap = {
+            'vault_import':      ['source-vault',  '◈ VAULT'],
+            'ap_import':         ['source-ap',     item.ap_number ? `AP ${item.ap_number}` : 'AP'],
+            'dashboard_created': ['source-manual', '✎ MANUAL'],
+            'recurring':         ['source-recur',  '↻ RECURRING'],
+            'xyleme_import':     ['source-xyleme', '⟳ XYLEME'],
+        };
+        const [srcCls, srcLabel] = srcMap[item.source] || srcMap['dashboard_created'];
+        const sourceBadge = `<span class="source-badge ${srcCls}">${srcLabel}</span>`;
+        const apPendingBadge = item.ap_pending_update
+            ? '<span class="source-badge" style="background:rgba(230,126,34,0.12);color:var(--amber);border-color:rgba(230,126,34,0.3);" title="Change pending Jennifer’s Smartsheet update">⏳ AP PENDING</span>'
+            : '';
+        const editBtn = canEdit ? `<button class="btn-edit" onclick="openEdit('${item.id}')">Edit</button>` : '';
+        const delBtn  = isAdmin ? `<button class="btn-delete" data-id="${item.id}" onclick="deleteItem('${item.id}',this)">Del</button>` : '';
+
+        return `
+            <tr class="${isMine?'is-mine':''}${escRow}">
+                <td>
+                    <div class="action-text">${sourceBadge}${apPendingBadge}${esc(item.action_text)} ${escFlag}${originBadge}</div>
+                    ${subLines ? `<div class="action-sub">${subLines}</div>` : ''}
+                </td>
+                <td>${item.category ? `<span class="cat-badge">${esc(item.category)}</span>` : '<span style="color:#ccc">—</span>'}</td>
+                <td class="owner-name">${esc(ownerName)}</td>
+                <td>${statusCell}</td>
+                <td><span class="${tierClass(item.priority)}">${esc(tierLabel)}</span>${wipFlag}</td>
+                <td>${dueHtml}</td>
+                <td><div class="row-actions">${editBtn}${delBtn}</div></td>
+            </tr>`;
+    }).join('');
+
+    container.innerHTML = `
+        <table>
+            <thead><tr>
+                <th>Action Item</th><th>Category</th><th>Owner</th>
+                <th>Status</th><th>Tier</th><th>Due</th><th></th>
+            </tr></thead>
+            <tbody>${rows}</tbody>
+        </table>`;
+}
+
+// ── QUICK STATUS ──────────────────────────────────
+async function quickStatus(el) {
+    const item = allItems.find(i => i.id === el.dataset.id);
+    const updatePayload = { status: el.value, vault_synced: false };
+    if (item?.source === 'ap_import') updatePayload.ap_pending_update = true;
+    const { error } = await db.from('action_items')
+        .update(updatePayload).eq('id', el.dataset.id);
+    if (error) { showToast('Update failed.', 'error'); await loadItems(); return; }
+    if (item) {
+        item.status = el.value;
+        item.vault_synced = false;
+        if (item.source === 'ap_import') item.ap_pending_update = true;
+    }
+    renderExec();
+    renderTable();
+    showToast('Status updated.', 'success');
+    if (el.value === 'Done' && item) checkReactivation(item.owner_id, item.action_text);
+}
+
+// ── DELETE (two-click) ────────────────────────────
+async function deleteItem(itemId, btn) {
+    if (btn.dataset.confirm !== 'true') {
+        btn.dataset.confirm = 'true';
+        btn.textContent = 'Sure?';
+        btn.classList.add('confirming');
+        setTimeout(() => {
+            if (btn.dataset.confirm === 'true') {
+                btn.dataset.confirm = 'false';
+                btn.textContent = 'Del';
+                btn.classList.remove('confirming');
+            }
+        }, 3000);
+        return;
+    }
+    const { error } = await db.from('action_items').delete().eq('id', itemId);
+    if (error) { showToast('Delete failed.', 'error'); return; }
+    showToast('Item deleted.', 'success');
+    await loadItems();
+}
+
+// ── MODAL ─────────────────────────────────────────
+document.getElementById('btn-add-item').addEventListener('click',    openAdd);
+document.getElementById('btn-modal-cancel').addEventListener('click', closeModal);
+document.getElementById('btn-modal-save').addEventListener('click',   saveItem);
+document.getElementById('modal-overlay').addEventListener('click', e => { if (e.target.id==='modal-overlay') closeModal(); });
+
+function openAdd() {
+    editingItemId = null;
+    document.getElementById('modal-title').textContent       = 'Add Action Item';
+    document.getElementById('modal-action').value            = '';
+    document.getElementById('modal-status').value            = 'Open';
+    document.getElementById('modal-start').value             = new Date().toISOString().split('T')[0];
+    document.getElementById('modal-tier').value              = 'Tier 3';
+    document.getElementById('modal-category').value          = '';
+    document.getElementById('modal-due').value               = '';
+    document.getElementById('modal-duration').value          = '';
+    document.getElementById('modal-next-step').value         = '';
+    document.getElementById('modal-blocker').value           = '';
+    document.getElementById('modal-notes').value             = '';
+    document.getElementById('modal-escalation').checked      = false;
+    document.getElementById('modal-origin').value             = '';
+    document.getElementById('modal-owner').value             = currentUser.id;
+    document.getElementById('owner-field-wrap').style.display = currentProfile?.role==='admin' ? 'block' : 'none';
+    document.getElementById('recur-row').style.display        = '';
+    document.getElementById('modal-repeats').value            = '';
+    document.getElementById('recur-ack').checked              = false;
+    updateRecurUI();
+    document.getElementById('modal-overlay').classList.add('active');
+    document.getElementById('modal-action').focus();
+}
+
+function openEdit(itemId) {
+    const item = allItems.find(i => i.id === itemId);
+    if (!item) return;
+    editingItemId = itemId;
+    document.getElementById('modal-title').textContent       = 'Edit Action Item';
+    document.getElementById('modal-action').value            = item.action_text;
+    document.getElementById('modal-status').value            = item.status;
+    document.getElementById('modal-tier').value              = item.priority;
+    document.getElementById('modal-category').value          = item.category || '';
+    document.getElementById('modal-start').value             = item.start_date || '';
+    document.getElementById('modal-due').value               = item.due_date || '';
+    document.getElementById('modal-duration').value          = item.requested_duration_days || '';
+    document.getElementById('modal-next-step').value         = item.next_step || '';
+    document.getElementById('modal-blocker').value           = item.blocker || '';
+    document.getElementById('modal-notes').value             = item.notes || '';
+    document.getElementById('modal-escalation').checked      = item.escalation_needed || false;
+    document.getElementById('modal-origin').value             = item.origin || '';
+    document.getElementById('modal-owner').value             = item.owner_id;
+    document.getElementById('owner-field-wrap').style.display = currentProfile?.role==='admin' ? 'block' : 'none';
+    // Recurrence is series-level — not editable from an instance (manage via ↻ Recurring)
+    document.getElementById('recur-row').style.display        = 'none';
+    document.getElementById('modal-repeats').value            = '';
+    document.getElementById('recur-ack-wrap').style.display   = 'none';
+    document.getElementById('modal-overlay').classList.add('active');
+}
+
+function closeModal() {
+    document.getElementById('modal-overlay').classList.remove('active');
+    editingItemId = null;
+}
+
+async function saveItem() {
+    const actionText = document.getElementById('modal-action').value.trim();
+    if (!actionText) { showToast('Action item text is required.', 'error'); return; }
+    if (!editingItemId && !document.getElementById('modal-start').value) {
+        showToast('Start date is required.', 'error');
+        document.getElementById('modal-start').focus();
+        return;
+    }
+    const recurFreq = !editingItemId ? document.getElementById('modal-repeats').value : '';
+    if (recurFreq) {
+        if (!document.getElementById('modal-due').value) {
+            showToast('A due date is required for recurring items — it anchors the repeat schedule.', 'error');
+            document.getElementById('modal-due').focus();
+            return;
+        }
+        const tierVal = document.getElementById('modal-tier').value;
+        if ((tierVal === 'Tier 1' || tierVal === 'Tier 2') && !document.getElementById('recur-ack').checked) {
+            showToast('Please confirm the tier acknowledgment for this recurring item.', 'error');
+            return;
+        }
+    }
+    const payload = {
+        action_text:       actionText,
+        status:            document.getElementById('modal-status').value,
+        priority:          document.getElementById('modal-tier').value,
+        category:          document.getElementById('modal-category').value   || null,
+        start_date:        document.getElementById('modal-start').value       || null,
+        due_date:          document.getElementById('modal-due').value         || null,
+        requested_duration_days: parseInt(document.getElementById('modal-duration').value) || null,
+        next_step:         document.getElementById('modal-next-step').value.trim() || null,
+        blocker:           document.getElementById('modal-blocker').value.trim()   || null,
+        notes:             document.getElementById('modal-notes').value.trim()     || null,
+        escalation_needed: document.getElementById('modal-escalation').checked,
+        origin:            document.getElementById('modal-origin').value || null,
+        vault_synced:      false,
+    };
+    const btn = document.getElementById('btn-modal-save');
+    btn.textContent = 'Saving…'; btn.disabled = true;
+    let error;
+    if (editingItemId) {
+        ({ error } = await db.from('action_items').update(payload).eq('id', editingItemId));
+    } else {
+        payload.owner_id = currentProfile?.role==='admin'
+            ? document.getElementById('modal-owner').value
+            : currentUser.id;
+        payload.source = 'dashboard_created';
+        if (recurFreq) payload._recur = { freq: recurFreq };
+        // WIP check for new Tier 2 items — only count items currently in-window
+        if (payload.priority === 'Tier 2') {
+            const _now = new Date(); _now.setHours(0,0,0,0);
+            const newStart = payload.start_date ? new Date(payload.start_date + 'T00:00:00') : _now;
+            const activeT2 = allItems.filter(i => i.owner_id === payload.owner_id && isT2Working(i, _now));
+            // Only intercept if the new item would also be working today
+            if (activeT2.length >= 5 && newStart <= _now) {
+                btn.textContent = 'Save Item'; btn.disabled = false;
+                closeModal();
+                pendingItemPayload = payload;
+                dispModalMode = 'add';
+                showDisplacementModal(payload.owner_id, activeT2);
+                return;
+            }
+        }
+        ({ error } = await insertItemWithRecur(payload));
+    }
+    btn.textContent = 'Save Item'; btn.disabled = false;
+    if (error) { showToast('Save failed — check your permissions.', 'error'); return; }
+    const wasEditing  = editingItemId;
+    const editedOwner = wasEditing ? allItems.find(i => i.id === wasEditing)?.owner_id : null;
+    const editedText  = wasEditing ? allItems.find(i => i.id === wasEditing)?.action_text : null;
+    closeModal();
+    showToast(wasEditing ? 'Item updated.' : 'Item added.', 'success');
+    await loadItems();
+    if (wasEditing && payload.status === 'Done' && editedOwner) {
+        checkReactivation(editedOwner, editedText);
+    }
+}
+
+// ── RECURRING ITEMS ─────────────────────────────
+const RECUR_DAYS = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+let _lastAckCtx = '';
+
+function updateRecurUI() {
+    const freq    = document.getElementById('modal-repeats').value;
+    const due     = document.getElementById('modal-due').value;
+    const tier    = document.getElementById('modal-tier').value;
+    const ruleEl  = document.getElementById('recur-rule-text');
+    const ackWrap = document.getElementById('recur-ack-wrap');
+    if (!freq) { ruleEl.textContent = ''; ackWrap.style.display = 'none'; _lastAckCtx = ''; return; }
+    if (!due) {
+        ruleEl.textContent = 'Set a due date to anchor the repeat schedule';
+    } else {
+        const d = new Date(due + 'T00:00:00');
+        ruleEl.textContent = freq === 'monthly'  ? `↻ Repeats on day ${d.getDate()} of each month`
+                           : freq === 'biweekly' ? `↻ Repeats every other ${RECUR_DAYS[d.getDay()]}`
+                           :                       `↻ Repeats every ${RECUR_DAYS[d.getDay()]}`;
+    }
+    const isHigh = tier === 'Tier 1' || tier === 'Tier 2';
+    ackWrap.style.display = isHigh ? 'block' : 'none';
+    if (isHigh) {
+        // Re-require acknowledgment whenever tier or frequency changes
+        const ctx = freq + '|' + tier;
+        if (ctx !== _lastAckCtx) { document.getElementById('recur-ack').checked = false; _lastAckCtx = ctx; }
+        document.querySelectorAll('.recur-ack-tier').forEach(el => el.textContent = tier.toUpperCase());
+        document.getElementById('recur-ack-msg').innerHTML = tier === 'Tier 2'
+            ? 'A recurring Tier 2 item occupies one of the 5 WIP slots <strong>every cycle, permanently</strong>. Routine repeating work is usually <strong>Tier 3 — Standard</strong>. Is this really a Tier 2, or is it actually a Tier 3?'
+            : 'A recurring Tier 1 item adds the equivalent of a fully loaded class to the workload index <strong>every cycle, permanently</strong>. Routine repeating work is usually <strong>Tier 3 — Standard</strong>. Is this really a Tier 1, or is it actually a Tier 3?';
+    }
+}
+['modal-repeats','modal-due','modal-tier'].forEach(id => {
+    document.getElementById(id).addEventListener('change', updateRecurUI);
+});
+
+function nextDueAfter(dueStr, freq) {
+    const d = new Date(dueStr + 'T00:00:00');
+    if (freq === 'weekly')   d.setDate(d.getDate() + 7);
+    if (freq === 'biweekly') d.setDate(d.getDate() + 14);
+    if (freq === 'monthly') {
+        const anchor = d.getDate();
+        d.setDate(1);
+        d.setMonth(d.getMonth() + 1);
+        const last = new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate();
+        d.setDate(Math.min(anchor, last));
+    }
+    return d.toISOString().split('T')[0];
+}
+
+// Single insert path for new action items. If the payload carries _recur, the
+// series row is created first and the instance is linked to it — used by the
+// direct save, the queue path, and the displacement path alike.
+async function insertItemWithRecur(payload) {
+    const recur = payload._recur;
+    delete payload._recur;
+    if (recur) {
+        const d = new Date(payload.due_date + 'T00:00:00');
+        const { data: series, error: serr } = await db.from('recurring_items').insert({
+            owner_id:    payload.owner_id,
+            action_text: payload.action_text,
+            priority:    payload.priority,
+            category:    payload.category,
+            origin:      payload.origin,
+            notes:       payload.notes,
+            next_step:   payload.next_step,
+            freq:        recur.freq,
+            anchor_day:  recur.freq === 'monthly' ? d.getDate() : d.getDay(),
+            next_due:    nextDueAfter(payload.due_date, recur.freq),
+            created_by:  currentUser.id,
+        }).select('id').single();
+        if (serr) return { error: serr };
+        payload.recurring_id = series.id;
+        payload.source = 'recurring';
+    }
+    return await db.from('action_items').insert(payload);
+}
+
+function closeRecurModal() {
+    document.getElementById('recur-modal-overlay').classList.remove('active');
+}
+
+document.getElementById('btn-recurring').addEventListener('click', openRecurModal);
+
+async function openRecurModal() {
+    document.getElementById('recur-modal-overlay').classList.add('active');
+    await renderRecurList();
+}
+
+async function renderRecurList() {
+    const body = document.getElementById('recur-modal-body');
+    body.innerHTML = '<div class="loading">Loading…</div>';
+    let q = db.from('recurring_items').select('*, users!owner_id(name)').order('created_at');
+    if (currentProfile?.role !== 'admin') q = q.eq('owner_id', currentUser.id);
+    const { data, error } = await q;
+    if (error) { body.innerHTML = '<div class="empty-state"><h3>Failed to load recurring items</h3></div>'; return; }
+    if (!data?.length) {
+        body.innerHTML = '<div class="empty-state"><h3>No recurring items</h3><p>Choose "Repeats" when adding an action item to create one.</p></div>';
+        return;
+    }
+    body.innerHTML = data.map(r => {
+        const d    = r.next_due ? new Date(r.next_due + 'T00:00:00') : null;
+        const rule = r.freq === 'monthly'
+            ? `Monthly · day ${r.anchor_day || (d ? d.getDate() : '?')}`
+            : (r.freq === 'biweekly' ? 'Every 2 weeks' : 'Weekly') + (d ? ' · ' + RECUR_DAYS[d.getDay()] : '');
+        const status = r.active ? '<span class="badge-ok">ACTIVE</span>' : '<span class="badge-pw">PAUSED</span>';
+        const ownerSuffix = currentProfile?.role === 'admin' ? ' · ' + esc(r.users?.name || '') : '';
+        return `<div style="border:1px solid var(--border);border-radius:3px;padding:12px 14px;margin-bottom:10px;display:flex;align-items:center;gap:12px;">
+            <div style="flex:1;min-width:0;">
+                <div style="font-size:12px;font-weight:700;color:var(--night);margin-bottom:3px;">${esc((r.action_text||'').substring(0,70))}</div>
+                <div style="font-size:10px;color:#999;">↻ ${rule} · Next due: ${r.next_due ? formatDate(r.next_due) : '—'} · ${esc(r.priority)}${ownerSuffix}</div>
+            </div>
+            ${status}
+            <button class="admin-btn" onclick="toggleRecurActive('${r.id}', ${!r.active})">${r.active ? 'Pause' : 'Resume'}</button>
+            <button class="admin-btn admin-btn-red" onclick="deleteRecurSeries('${r.id}', this)">Del</button>
+        </div>`;
+    }).join('');
+}
+
+async function toggleRecurActive(id, active) {
+    const { error } = await db.from('recurring_items').update({ active }).eq('id', id);
+    if (error) { showToast('Update failed.', 'error'); return; }
+    showToast(active ? 'Series resumed.' : 'Series paused — no new instances will be created.', 'success');
+    await renderRecurList();
+}
+
+async function deleteRecurSeries(id, btn) {
+    if (btn.dataset.confirm !== 'true') {
+        btn.dataset.confirm = 'true';
+        btn.textContent = 'Sure?';
+        btn.classList.add('confirming');
+        setTimeout(() => {
+            if (btn.dataset.confirm === 'true') {
+                btn.dataset.confirm = 'false';
+                btn.textContent = 'Del';
+                btn.classList.remove('confirming');
+            }
+        }, 3000);
+        return;
+    }
+    const { error } = await db.from('recurring_items').delete().eq('id', id);
+    if (error) { showToast('Delete failed.', 'error'); return; }
+    showToast('Series deleted — existing instances kept.', 'success');
+    await renderRecurList();
+}
+
+// ── FORGOT PASSWORD ─────────────────────────────
+function showForgotPassword() {
+    document.getElementById('forgot-pw-form').style.display = 'block';
+    document.getElementById('forgot-result').textContent = '';
+    document.getElementById('forgot-email').focus();
+}
+function hideForgotPassword() {
+    document.getElementById('forgot-pw-form').style.display = 'none';
+    document.getElementById('forgot-email').value = '';
+    document.getElementById('forgot-result').textContent = '';
+}
+async function handleForgotPassword() {
+    const email  = document.getElementById('forgot-email').value.trim();
+    const result = document.getElementById('forgot-result');
+    if (!email) { result.textContent = 'Please enter your email address.'; result.style.color = 'var(--red)'; return; }
+    result.textContent = 'Sending…'; result.style.color = '#999';
+    const { error } = await db.auth.resetPasswordForEmail(email, {
+        redirectTo: 'https://pages.github.apps.gevernova.net/210077026/hlc-pll-dashboard/'
+    });
+    // Always show generic message — don’t reveal whether email exists
+    result.textContent = 'If that address is registered, a reset link has been sent. Check your inbox.';
+    result.style.color = 'var(--ev)';
+}
+
+// ── PASSWORD CHANGE ─────────────────────────────
+async function handlePasswordChange() {
+    const newPw = document.getElementById('pw-new').value;
+    const conf  = document.getElementById('pw-confirm').value;
+    const errEl = document.getElementById('pw-error');
+    const btn   = document.getElementById('btn-set-pw');
+    errEl.textContent = '';
+
+    if (newPw.length < 8) { errEl.textContent = 'Password must be at least 8 characters.'; return; }
+    if (newPw !== conf)   { errEl.textContent = 'Passwords do not match.'; return; }
+
+    btn.textContent = 'Setting password…'; btn.disabled = true;
+
+    const { error } = await db.auth.updateUser({ password: newPw });
+    if (error) {
+        errEl.textContent = 'Error: ' + error.message;
+        btn.textContent = 'Set Password & Continue'; btn.disabled = false;
+        return;
+    }
+
+    // Clear the flag in users table
+    await db.from('users').update({ must_change_password: false }).eq('id', currentUser.id);
+
+    // Hide pw screen and re-run initDashboard — flag is now clear, proceeds normally
+    document.getElementById('pw-change-screen').style.display = 'none';
+    await initDashboard(currentUser);
+}
+
+// ── RELEASE NOTES ───────────────────────────────
+// Shown once per user per release: users.last_seen_release is compared
+// against this constant; bump it (and the modal content) on each release.
+const CURRENT_RELEASE = '2.0';
+const RELEASE_NOTES_HTML = `
+    <p style="margin-bottom:12px;font-size:13px;"><strong>Xyleme Modernization Tracking</strong><br>
+    Your Xyleme curriculum modernization workload now appears automatically in your action list.
+    Items tagged <span class="source-badge source-xyleme">⟳ XYLEME</span> are synced live from
+    Smartsheet every 30 minutes — no manual entry needed. Status, module counts, and due dates
+    update automatically as progress is made.</p>
+    <p style="margin-bottom:12px;font-size:13px;"><strong>AP Items</strong><br>
+    Action Plan items from the OFS Training Action Plan Tracker continue to sync automatically.
+    Items tagged <span class="source-badge source-ap">AP</span> are managed in Smartsheet;
+    ORION reflects the current state.</p>
+    <p style="margin-bottom:6px;font-size:13px;"><strong>Source Tags</strong><br>
+    Every action item now shows where it came from:</p>
+    <div style="font-size:12px;line-height:2;margin-bottom:12px;">
+        <span class="source-badge source-vault">◈ VAULT</span> — synced from your vault<br>
+        <span class="source-badge source-ap">AP</span> — synced from Action Plan Tracker<br>
+        <span class="source-badge source-xyleme">⟳ XYLEME</span> — synced from Xyleme Modernization Tracker<br>
+        <span class="source-badge source-manual">✎ MANUAL</span> — you added this directly
+    </div>
+    <p style="font-size:12px;color:#999;">Questions? Contact Jim Rosen.</p>`;
+
+function closeReleaseModal() {
+    document.getElementById('release-modal-overlay').classList.remove('active');
+    checkDailyBrief();   // the daily brief waits its turn behind the release notes
+}
+
+async function checkReleaseNotes() {
+    if ((currentProfile?.last_seen_release || '0.0') === CURRENT_RELEASE) return false;
+    document.getElementById('release-modal-title').textContent = `What's New in ORION — v${CURRENT_RELEASE}`;
+    document.getElementById('release-modal-body').innerHTML = RELEASE_NOTES_HTML;
+    document.getElementById('release-modal-overlay').classList.add('active');
+    // Mark as seen immediately — dismissing must never re-trigger it.
+    await db.from('users').update({ last_seen_release: CURRENT_RELEASE }).eq('id', currentUser.id);
+    if (currentProfile) currentProfile.last_seen_release = CURRENT_RELEASE;
+    return true;
+}
+
+// ── DAILY BRIEF ─────────────────────────────────
+function closeBriefModal() {
+    document.getElementById('brief-modal-overlay').classList.remove('active');
+}
+
+async function checkDailyBrief() {
+    const today = new Date().toISOString().split('T')[0];
+    if (currentProfile?.last_notified_date === today) return;
+
+    const firstName = (currentProfile?.name || '').split(' ')[0];
+    const lastDate  = currentProfile?.last_notified_date || '2020-01-01';
+    let title = "What's New";
+    let bodyHtml = '';
+
+    if (currentProfile?.role === 'pll') {
+        // New auto-added items since last login
+        const sevenDaysAgo = new Date(); sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+        const capDate  = sevenDaysAgo.toISOString().split('T')[0];
+        const fromDate = lastDate > capDate ? lastDate : capDate;
+        const newItems = allItems.filter(i =>
+            i.owner_id === currentUser.id &&
+            i.source !== 'dashboard_created' &&
+            (i.created_date || '') > fromDate
+        ).slice(0, 10);
+        title = `Good morning, ${firstName}!`;
+        if (newItems.length > 0) {
+            const rows = newItems.map(i => {
+                const src = i.source === 'ap_import'
+                    ? `Action Plan${i.ap_number ? ` (AP ${esc(i.ap_number)})` : ''}`
+                    : 'your meeting notes';
+                return `<div style="padding:10px 14px;background:var(--bg);border:1px solid var(--border);border-radius:3px;border-left:4px solid var(--lime);margin-bottom:8px;">
+                    <div style="font-size:12px;font-weight:700;color:var(--night);margin-bottom:3px;">${esc((i.action_text||'').substring(0,80))}${i.action_text?.length>80?'…':''}</div>
+                    <div style="font-size:10px;color:#999;">${i.priority} · Synced from ${src}</div>
+                </div>`;
+            }).join('');
+            bodyHtml = `<p style="margin-bottom:14px;font-size:13px;">${newItems.length} item${newItems.length!==1?'s were':' was'} added to your queue since your last login. Please review for accuracy and update status as needed.</p>${rows}`;
+        } else {
+            bodyHtml = `<p style="font-size:13px;">No new items were added to your queue since your last login. You’re all caught up!</p>`;
+        }
+    } else {
+        // Admin / viewer — show current escalations
+        const escalated = allItems.filter(i => i.escalation_needed);
+        title = 'Escalation Summary';
+        if (escalated.length > 0) {
+            const rows = escalated.map(i => {
+                const ownerName = allUsers.find(u => u.id === i.owner_id)?.name || 'Unknown';
+                return `<div style="padding:10px 14px;background:rgba(192,57,43,0.05);border:1px solid rgba(192,57,43,0.2);border-radius:3px;border-left:4px solid var(--red);margin-bottom:8px;">
+                    <div style="font-size:10px;font-weight:800;color:var(--red);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:3px;">${esc(ownerName)}</div>
+                    <div style="font-size:12px;font-weight:600;color:var(--night);margin-bottom:3px;">${esc((i.action_text||'').substring(0,80))}${i.action_text?.length>80?'…':''}</div>
+                    <div style="font-size:10px;color:#999;">${i.priority} · Due: ${i.due_date?formatDate(i.due_date):'—'}</div>
+                </div>`;
+            }).join('');
+            bodyHtml = `<p style="margin-bottom:14px;font-size:13px;"><strong>${escalated.length} item${escalated.length!==1?'s':''}</strong> currently need${escalated.length===1?'s':''} leadership attention:</p>${rows}`;
+        } else {
+            bodyHtml = `<p style="font-size:13px;">No items currently need escalation. Have a good day!</p>`;
+        }
+    }
+
+    // Feedback notification (admin only)
+    if (currentProfile?.role === 'admin') {
+        const fbCount = await getUnresolvedFeedbackCount();
+        if (fbCount > 0) {
+            bodyHtml += `<p style="font-size:13px;margin-top:12px;padding:10px 12px;background:rgba(192,57,43,0.08);border-radius:6px;border-left:3px solid var(--red)">🔴 <strong>${fbCount} unresolved feedback item${fbCount === 1 ? '' : 's'}</strong> pending — check the Admin tab to review and resolve.</p>`;
+        }
+    }
+
+    document.getElementById('brief-modal-title').textContent = title;
+    document.getElementById('brief-modal-body').innerHTML = bodyHtml;
+    document.getElementById('brief-modal-overlay').classList.add('active');
+
+    // Mark as seen today
+    await db.from('users').update({ last_notified_date: today }).eq('id', currentUser.id);
+    if (currentProfile) currentProfile.last_notified_date = today;
+}
+
+// ── ADMIN ───────────────────────────────────────
+let directorViewActive = false;
+
+function toggleDirectorView() {
+    directorViewActive = !directorViewActive;
+    const btn = document.getElementById('btn-director-toggle');
+    const adminBtn = document.getElementById('tab-btn-admin');
+    btn.textContent = directorViewActive ? 'Admin View' : 'Director View';
+    btn.classList.toggle('active', directorViewActive);
+    adminBtn.style.display = directorViewActive ? 'none' : '';
+    const activeTab = document.querySelector('.tab-btn.active')?.dataset.tab;
+    if (activeTab === 'dvli')    renderDVLI();
+    if (activeTab === 'workload') renderWorkload();
+    if (activeTab === 'actions') renderTable();
+}
+
+async function loadSettings() {
+    const { data } = await db.from('settings').select('key,value').eq('group_name','dvli');
+    if (!data?.length) return;
+    const m = Object.fromEntries(data.map(r => [r.key, parseFloat(r.value)]));
+    // Number.isFinite (not truthiness) so a weight deliberately set to 0 is honored
+    const apply = (key, prop) => { if (Number.isFinite(m[key])) DVLI_W[prop] = m[key]; };
+    apply('dvli_t1_max',           'T1_MAX');
+    apply('dvli_t1_class',         'T1_CLASS');
+    apply('dvli_t1_oe_premium',    'T1_OE_PREMIUM');
+    apply('dvli_t1_student_ratio', 'T1_STUDENT_RATIO');
+    apply('dvli_t1_manual_pts',    'T1_MANUAL_PTS');
+    apply('dvli_t2_wip_pts',       'T2_WIP_PTS');
+    apply('dvli_t2_wip_max',       'T2_WIP_MAX');
+    apply('dvli_t2_intensity_pts', 'T2_INTENSITY_PTS');
+    apply('dvli_t2_ap_premium',    'T2_AP_PREMIUM');
+    apply('dvli_t34_active_pt',    'T34_ACTIVE_PT');
+    apply('dvli_t34_open_pt',      'T34_OPEN_PT');
+    apply('dvli_t34_max',          'T34_MAX');
+    apply('dvli_scale_max',        'SCALE_MAX');
+}
+
+async function renderAdminTab() {
+    if (currentProfile?.role !== 'admin') { return; }
+    const container = document.getElementById('admin-container');
+    if (!container) return;
+    container.innerHTML = '<div class="loading">Loading…</div>';
+    const { data: users } = await db.from('users').select('id,name,email,role,manager_id,must_change_password,last_notified_date').order('role').order('name');
+    const { data: settings } = await db.from('settings').select('key,value,label').eq('group_name','dvli').order('key');
+    const { data: itemStats } = await db.from('action_items').select('status');
+    const counts = { Open:0, 'In Progress':0, Done:0, Deferred:0 };
+    (itemStats||[]).forEach(i => { if (counts[i.status]!==undefined) counts[i.status]++; });
+    const total = Object.values(counts).reduce((a,b)=>a+b,0);
+    const ROLES = ['admin','director','pm','pll','viewer'];
+    const userRows = (users||[]).map(u => {
+        const managerOpts = (users||[]).filter(m=>m.role==='admin'||m.role==='director')
+            .map(m=>`<option value="${m.id}" ${u.manager_id===m.id?'selected':''}>${esc(m.name)}</option>`).join('');
+        const roleOpts = ROLES.map(r=>`<option value="${r}" ${u.role===r?'selected':''}>${r}</option>`).join('');
+        const status = u.must_change_password
+            ? '<span class="badge-pw">PW PENDING</span>'
+            : u.last_notified_date ? '<span class="badge-ok">ACTIVE</span>' : '<span style="font-size:10px;color:#999;">Never logged in</span>';
+        return `<tr>
+            <td style="font-weight:700;color:var(--night);">${esc(u.name)}</td>
+            <td style="color:#666;font-size:11px;">${esc(u.email||'')}</td>
+            <td><select class="admin-select" onchange="adminUpdateRole('${u.id}',this.value)">${roleOpts}</select></td>
+            <td><select class="admin-select" onchange="adminUpdateManager('${u.id}',this.value)"><option value="">— None —</option>${managerOpts}</select></td>
+            <td>${status}</td>
+            <td><button class="admin-btn admin-btn-red" onclick="adminResetPassword('${u.id}','${esc(u.name)}')">Reset PW</button></td>
+        </tr>`;
+    }).join('');
+    const weightFields = (settings||[]).map(s=>`
+        <div class="weight-field"><label>${esc(s.label||s.key)}</label>
+        <input type="number" step="any" id="w_${s.key}" value="${esc(s.value)}"></div>`).join('');
+    container.innerHTML = `
+        <div class="admin-section">
+            <div class="admin-section-header"><span>User Management</span>
+            <span style="font-size:10px;font-weight:400;opacity:0.6;">${(users||[]).length} users &middot; New users added via Supabase dashboard</span></div>
+            <div class="admin-section-body" style="padding:0;">
+                <table class="admin-table">
+                    <thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Reports To</th><th>Status</th><th></th></tr></thead>
+                    <tbody>${userRows}</tbody>
+                </table>
+            </div>
+        </div>
+        <div class="admin-section">
+            <div class="admin-section-header"><span>DVLI Weights</span>
+            <button class="admin-btn" style="color:var(--lime);border-color:rgba(200,255,8,0.4);background:rgba(200,255,8,0.08);" onclick="adminSaveWeights()">Save &amp; Apply</button></div>
+            <div class="admin-section-body">
+                <div class="dvli-weights-grid">${weightFields}</div>
+                <div id="weights-msg" style="font-size:11px;color:var(--ev);margin-top:12px;min-height:16px;"></div>
+            </div>
+        </div>
+        <div class="admin-section">
+            <div class="admin-section-header"><span>System Status</span></div>
+            <div class="admin-section-body">
+                <div class="status-grid">
+                    <div class="status-card"><div class="status-val">${total}</div><div class="status-lbl">Total Items</div></div>
+                    <div class="status-card"><div class="status-val" style="color:var(--open)">${counts['Open']}</div><div class="status-lbl">Open</div></div>
+                    <div class="status-card"><div class="status-val" style="color:var(--ev)">${counts['In Progress']}</div><div class="status-lbl">In Progress</div></div>
+                    <div class="status-card"><div class="status-val" style="color:var(--done)">${counts['Done']}</div><div class="status-lbl">Done</div></div>
+                    <div class="status-card"><div class="status-val" style="color:#777">${counts['Deferred']}</div><div class="status-lbl">Deferred</div></div>
+                    <div class="status-card"><div class="status-val" style="color:var(--amber)">${(users||[]).filter(u=>u.must_change_password).length}</div><div class="status-lbl">PW Pending</div></div>
+                </div>
+
+        <!-- Feedback & Bug Reports -->
+        <div class="section-card" style="margin-top:20px">
+            <div class="section-header" style="display:flex;align-items:center;justify-content:space-between">
+                <h2 class="section-title">📬 Feedback &amp; Bug Reports</h2>
+                <span id="feedbackUnresolvedCount" style="font-size:12px;color:var(--body);font-weight:600"></span>
+            </div>
+            <div style="overflow-x:auto;margin-top:12px">
+                <table class="feedback-table">
+                    <thead>
+                        <tr>
+                            <th style="width:110px">Type</th>
+                            <th style="width:140px">From</th>
+                            <th>Message</th>
+                            <th style="width:150px">Submitted</th>
+                            <th style="width:80px;text-align:center">Resolved</th>
+                        </tr>
+                    </thead>
+                    <tbody id="feedbackTableBody">
+                        <tr><td colspan="5" style="text-align:center;color:var(--body);padding:24px">Loading...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+            </div>
+        </div>`;
+    loadFeedback();
+}
+
+async function adminUpdateRole(userId, newRole) {
+    const { error } = await db.from('users').update({ role: newRole }).eq('id', userId);
+    error ? showToast('Role update failed.','error') : (showToast('Role updated.','success'), loadUsers());
+}
+async function adminUpdateManager(userId, managerId) {
+    const { error } = await db.from('users').update({ manager_id: managerId||null }).eq('id', userId);
+    error ? showToast('Manager update failed.','error') : showToast('Manager updated.','success');
+}
+async function adminResetPassword(userId, name) {
+    const { error } = await db.from('users').update({ must_change_password: true }).eq('id', userId);
+    error ? showToast('Reset failed.','error') : (showToast(name+' will be prompted to set a new password on next login.','success'), renderAdminTab());
+}
+async function adminSaveWeights() {
+    const keys=['dvli_t1_max','dvli_t1_class','dvli_t1_oe_premium','dvli_t1_student_ratio','dvli_t1_manual_pts',
+                'dvli_t2_wip_pts','dvli_t2_wip_max','dvli_t2_intensity_pts','dvli_t2_ap_premium',
+                'dvli_t34_active_pt','dvli_t34_open_pt','dvli_t34_max','dvli_scale_max'];
+    for (const k of keys) {
+        const el = document.getElementById('w_'+k);
+        if (el) await db.from('settings').update({ value: el.value }).eq('key', k);
+    }
+    await loadSettings();
+    const msg = document.getElementById('weights-msg');
+    if (msg) { msg.textContent = 'Weights saved and applied.'; setTimeout(()=>{ msg.textContent=''; },4000); }
+}
+
+// ── DVLI WEIGHTS ────────────────────────────────
+// Adjust these to tune the DVLI formula without touching the logic.
+const DVLI_W = {
+    T1_MAX:           68,    // max T1 contribution to DVLI
+    T1_CLASS:          8,    // pts per class this week
+    T1_OE_PREMIUM:     4,    // extra pts per OE class (on top of T1_CLASS)
+    T1_STUDENT_RATIO:  6,    // 1 pt per N students (lower = more pts per student)
+    T1_MANUAL_PTS:    10,    // pts per active manual Tier 1 item (≈ one fully loaded class)
+    T2_WIP_PTS:       23,    // max pts for WIP slot usage  [tuned down]
+    T2_WIP_MAX:        5,    // WIP limit (full score at this count)
+    T2_INTENSITY_PTS: 13,    // max pts for workload intensity  [tuned down]
+    T2_AP_PREMIUM:   1.3,    // AP items count 1.3x in intensity calc  [tuned down]
+    T34_ACTIVE_PT:   1.0,    // pts per in-progress T3/4 item
+    T34_OPEN_PT:     0.4,    // pts per open T3/4 item
+    T34_MAX:          10,    // cap on T3/4 contribution
+    SCALE_MAX:       150,    // visual gauge ceiling (100 = capacity limit)
+};
+
+function calcDVLI(pllId, cb) {
+    const pllUser = allUsers.find(u => u.id === pllId);
+    if (!pllUser) return null;
+    const pllName = pllUser.name;
+    const items   = allItems.filter(i => i.owner_id === pllId);
+    const now     = new Date(); now.setHours(0,0,0,0);
+
+    // T1 — Standard Work (command board classes + manual Tier 1 items)
+    const cbPLL = cb?.slide2?.plls?.find(p => p.name === pllName) || null;
+    const t1ManualCount = items.filter(i => isT1Active(i, now)).length;
+    let t1raw = t1ManualCount * DVLI_W.T1_MANUAL_PTS;
+    if (cbPLL) {
+        t1raw += cbPLL.totalClasses * DVLI_W.T1_CLASS
+               + cbPLL.oeClasses    * DVLI_W.T1_OE_PREMIUM
+               + Math.floor(cbPLL.totalStudents / DVLI_W.T1_STUDENT_RATIO);
+    }
+    const t1 = Math.min(DVLI_W.T1_MAX, t1raw);
+
+    // T2 — Daily Management Work
+    const t2Working = items.filter(i => isT2Working(i, now));
+    const wipCount  = t2Working.length;
+    const wipScore  = Math.min(DVLI_W.T2_WIP_PTS, (wipCount / DVLI_W.T2_WIP_MAX) * DVLI_W.T2_WIP_PTS);
+
+    let intensityScore = 0;
+    if (wipCount > 0) {
+        const loads = t2Working.map(i => {
+            const s = i.start_date ? new Date(i.start_date+'T00:00:00') : now;
+            const e = i.due_date   ? new Date(i.due_date  +'T00:00:00') : now;
+            const total  = Math.max(1, (e - s) / 86400000);
+            const remain = Math.max(0, (e - now) / 86400000);
+            const load   = Math.min(1, remain / total);
+            return load * (i.source === 'ap_import' ? DVLI_W.T2_AP_PREMIUM : 1.0);
+        });
+        const avg = loads.reduce((a,b) => a+b, 0) / loads.length;
+        intensityScore = Math.min(DVLI_W.T2_INTENSITY_PTS, avg * DVLI_W.T2_INTENSITY_PTS);
+    }
+    const t2 = Math.round(wipScore + intensityScore);
+
+    // T3/4 — Queue Pressure
+    const t34items  = items.filter(i =>
+        (i.priority === 'Tier 3' || i.priority === 'Tier 4') &&
+        (i.status === 'Open' || i.status === 'In Progress')
+    );
+    const t34raw = t34items.filter(i => i.status === 'In Progress').length * DVLI_W.T34_ACTIVE_PT
+                 + t34items.filter(i => i.status === 'Open').length          * DVLI_W.T34_OPEN_PT;
+    const t34 = Math.round(Math.min(DVLI_W.T34_MAX, t34raw));
+
+    return { total: Math.round(t1 + t2 + t34), t1: Math.round(t1), t2, t34, wipCount, t34Count: t34items.length, t1ManualCount, cbPLL, pllName };
+}
+
+// ── WIP HELPERS ─────────────────────────────────
+function isT2Working(item, today) {
+    if (item.priority !== 'Tier 2') return false;
+    if (item.status === 'Done' || item.status === 'Deferred') return false;
+    const s = item.start_date ? new Date(item.start_date + 'T00:00:00') : null;
+    const e = item.due_date   ? new Date(item.due_date   + 'T00:00:00') : null;
+    return (!s || s <= today) && (!e || e >= today);
+}
+function isT2Queued(item, today) {
+    if (item.priority !== 'Tier 2') return false;
+    if (item.status === 'Done' || item.status === 'Deferred') return false;
+    const s = item.start_date ? new Date(item.start_date + 'T00:00:00') : null;
+    return s && s > today;
+}
+// Manual Tier 1 = critical standard work. Counts as active once started and not
+// Done/Deferred — deliberately no due-date cutoff, since overdue critical work is
+// still load (unlike isT2Working, where the window defines the WIP slot).
+function isT1Active(item, today) {
+    if (item.priority !== 'Tier 1') return false;
+    if (item.status === 'Done' || item.status === 'Deferred') return false;
+    const s = item.start_date ? new Date(item.start_date + 'T00:00:00') : null;
+    return !s || s <= today;
+}
+// When does a Tier 2 slot actually open? Items are assumed to complete on their
+// due dates, so a slot opens when enough items finish to drop the working count
+// below wipMax — not when the first item finishes. Items with no due date never
+// free a slot, so the projection is null if they'd have to.
+function nextSlotInfo(t2Working, wipMax) {
+    const needed = t2Working.length - wipMax + 1;
+    if (needed <= 0) return { available: true, item: null };
+    const dated = t2Working.filter(i => i.due_date)
+        .sort((a,b) => new Date(a.due_date) - new Date(b.due_date));
+    return { available: false, item: dated.length >= needed ? dated[needed-1] : null };
+}
+
+// ── DISPLACEMENT & REACTIVATION ─────────────────
+function showDisplacementModal(ownerId, activeT2) {
+    const pllName  = allUsers.find(u => u.id === ownerId)?.name || 'This PLL';
+    const slot     = nextSlotInfo(activeT2, 5);
+    const nextDate = slot.item ? formatDate(slot.item.due_date) : 'unknown';
+    const nextItem = slot.item ? (slot.item.action_text||'').substring(0,50) : '';
+    const isReview = dispModalMode === 'review';
+
+    document.getElementById('disp-modal-title').textContent = isReview
+        ? 'WIP Review — You Are Over the Tier 2 Limit'
+        : 'Tier 2 Capacity — Action Required';
+
+    const cards = activeT2.map(i => {
+        const srcLabel = i.source==='ap_import' ? (i.ap_number ? 'AP '+i.ap_number : 'AP')
+                       : i.source==='vault_import' ? 'Vault' : 'Manual';
+        return `<div class="disp-card" data-id="${i.id}" onclick="selectDispCard(this)">
+            <div class="disp-card-source">${srcLabel}</div>
+            <div class="disp-card-text">${esc((i.action_text||'').substring(0,70))}${(i.action_text||'').length>70?'…':''}</div>
+            <div class="disp-card-meta">${i.priority} · Due: ${i.due_date?formatDate(i.due_date):'—'}</div>
+        </div>`;
+    }).join('');
+
+    const pathALabel = isReview ? 'Option A — Keep As Is' : 'Path A — Queue It';
+    const pathADesc  = isReview
+        ? 'Leave the current items as-is and dismiss this review.'
+        : `Add the item as open. Next opening: <strong>${nextDate}</strong> when <em>${esc(nextItem)}</em> completes.`;
+    const pathBLabel = isReview ? 'Option B — Defer an Item' : 'Path B — Displace an Item';
+    const queueLabel = isReview ? 'Keep As Is' : 'Queue It';
+    const dispLabel  = isReview ? 'Defer Selected' : 'Displace Selected';
+
+    document.getElementById('disp-modal-body').innerHTML = `
+        <p style="font-size:13px;color:var(--body);margin-bottom:16px;">
+            <strong>${esc(pllName)}</strong> has <strong>${activeT2.length} active Tier 2 items</strong> (limit: 5). Choose how to proceed:
+        </p>
+        <div class="disp-path">
+            <div class="disp-path-label">${pathALabel}</div>
+            <p style="font-size:12px;color:#666;margin:6px 0 0;">${pathADesc}</p>
+        </div>
+        <div class="disp-path">
+            <div class="disp-path-label">${pathBLabel}</div>
+            <p style="font-size:12px;color:#666;margin:6px 0 8px;">Select one active Tier 2 item to defer. Its original dates will be preserved.</p>
+            <div id="disp-card-list">${cards}</div>
+        </div>`;
+
+    document.getElementById('disp-modal-footer').innerHTML = `
+        <button class="btn-cancel" onclick="closeDisplacementModal()">Cancel</button>
+        <button class="btn-cancel" id="btn-disp-queue" onclick="handleQueue()" style="border-color:var(--amber);color:var(--amber);">${queueLabel}</button>
+        <button class="btn-save" id="btn-disp-confirm" onclick="handleDisplace()" disabled>${dispLabel}</button>`;
+
+    document.getElementById('disp-modal-overlay').classList.add('active');
+}
+
+function selectDispCard(el) {
+    document.querySelectorAll('.disp-card').forEach(c => c.classList.remove('selected'));
+    el.classList.add('selected');
+    document.getElementById('btn-disp-confirm').disabled = false;
+}
+
+function closeDisplacementModal() {
+    document.getElementById('disp-modal-overlay').classList.remove('active');
+    pendingItemPayload = null;
+    dispModalMode = 'add';
+}
+
+async function handleQueue() {
+    if (dispModalMode === 'review') {
+        // Clear the flag — PLL acknowledged overage
+        await db.from('users').update({ pending_wip_review: false }).eq('id', currentUser.id);
+        closeDisplacementModal();
+        showToast('WIP review dismissed.', 'success');
+        return;
+    }
+    if (!pendingItemPayload) return;
+    const { error } = await insertItemWithRecur(pendingItemPayload);
+    closeDisplacementModal();
+    if (error) { showToast('Save failed.', 'error'); return; }
+    showToast('Item queued — WIP over limit. Resolve when possible.', 'success');
+    await loadItems();
+}
+
+async function handleDisplace() {
+    const selected = document.querySelector('.disp-card.selected');
+    if (!selected) return;
+    const displaceId   = selected.dataset.id;
+    const displaceItem = allItems.find(i => i.id === displaceId);
+    if (!displaceItem) return;
+    const btn   = document.getElementById('btn-disp-confirm');
+    const today = new Date().toISOString().split('T')[0];
+    btn.textContent = 'Saving…'; btn.disabled = true;
+
+    const newName = pendingItemPayload ? (pendingItemPayload.action_text||'').substring(0,60) : 'WIP review';
+    const { error: deferErr } = await db.from('action_items').update({
+        status:              'Deferred',
+        displaced_by:        newName,
+        original_start_date: displaceItem.start_date || null,
+        original_due_date:   displaceItem.due_date   || null,
+        displacement_date:   today,
+        vault_synced:        false,
+    }).eq('id', displaceId);
+
+    if (deferErr) { showToast('Displacement failed.', 'error'); btn.textContent = 'Displace Selected'; btn.disabled = false; return; }
+
+    if (dispModalMode === 'add' && pendingItemPayload) {
+        const { error: insertErr } = await insertItemWithRecur(pendingItemPayload);
+        if (insertErr) showToast('Item saved but displacement may be incomplete.', 'error');
+        else showToast('Item added. Displaced item deferred — originals preserved.', 'success');
+    } else {
+        // Review mode — just the deferral
+        await db.from('users').update({ pending_wip_review: false }).eq('id', currentUser.id);
+        showToast('Item deferred — originals preserved. WIP review cleared.', 'success');
+    }
+    closeDisplacementModal();
+    await loadItems();
+}
+
+async function checkReactivation(ownerId, completedName) {
+    if (!ownerId) return;
+    const displaced = allItems.filter(i =>
+        i.owner_id === ownerId && i.status === 'Deferred' && i.displaced_by
+    );
+    if (displaced.length === 0) return;
+    showReactivationModal(displaced, completedName);
+}
+
+function showReactivationModal(items, completedName) {
+    const cards = items.map(i => `
+        <div style="background:var(--bg);border:1px solid var(--border);border-radius:3px;padding:14px 16px;margin-bottom:10px;">
+            <div style="font-size:10px;font-weight:800;color:var(--amber);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">Displaced by: ${esc(i.displaced_by||'unknown')}</div>
+            <div style="font-size:13px;font-weight:600;color:var(--night);margin-bottom:6px;">${esc((i.action_text||'').substring(0,80))}${(i.action_text||'').length>80?'…':''}</div>
+            <div style="font-size:11px;color:#999;">Original start: ${i.original_start_date?formatDate(i.original_start_date):'—'} · Original due: ${i.original_due_date?formatDate(i.original_due_date):'—'}</div>
+            <button class="btn-save" style="margin-top:10px;padding:7px 16px;font-size:10px;" data-iid="${i.id}" onclick="reactivateItem(this.dataset.iid,this)">Reactivate</button>
+        </div>`).join('');
+    document.getElementById('react-modal-body').innerHTML = `
+        <p style="font-size:13px;color:var(--body);margin-bottom:16px;"><strong>${esc((completedName||'An item').substring(0,60))}</strong> was just marked Done. The following items were deferred to make room:</p>
+        ${cards}`;
+    document.getElementById('react-modal-overlay').classList.add('active');
+}
+
+async function reactivateItem(itemId, btn) {
+    const item = allItems.find(i => i.id === itemId);
+    if (!item) return;
+    btn.textContent = 'Reactivating…'; btn.disabled = true;
+    const { error } = await db.from('action_items').update({
+        status:              'Open',
+        start_date:          item.original_start_date || item.start_date,
+        due_date:            item.original_due_date   || item.due_date,
+        displaced_by:        null,
+        original_start_date: null,
+        original_due_date:   null,
+        displacement_date:   null,
+        vault_synced:        false,
+    }).eq('id', itemId);
+    if (error) { showToast('Reactivation failed.', 'error'); btn.textContent = 'Reactivate'; btn.disabled = false; return; }
+    btn.textContent = 'Reactivated ✓'; btn.disabled = true;
+    showToast('Item reactivated — original dates restored.', 'success');
+    await loadItems();
+}
+
+function closeReactivationModal() {
+    document.getElementById('react-modal-overlay').classList.remove('active');
+}
+
+// ── DVLI ────────────────────────────────────────
+async function renderDVLI() {
+    const container = document.getElementById('dvli-container');
+    if (!container) return;
+    container.innerHTML = '<div class="loading">Calculating workload index…</div>';
+    const cb = await loadCommandBoard();
+    const pllUsers = allUsers.filter(u => u.role === 'pll');
+    if (!pllUsers.length || !allItems.length) {
+        container.innerHTML = '<div class="empty-state"><h3>No data available</h3></div>';
+        return;
+    }
+    const scores = pllUsers.map(u => calcDVLI(u.id, cb)).filter(Boolean).sort((a,b) => b.total - a.total);
+
+    // Bands align with the summary tiles: <80 healthy · 80–100 near/at capacity · >100 overloaded
+    function dvliColor(n) {
+        return n > 100 ? 'var(--red)' : n >= 90 ? 'var(--amber)' : n >= 80 ? '#E67E22' : 'var(--ev)';
+    }
+    function dvliStatus(n) {
+        if (n > 100) return ['OVERLOADED',   'rgba(192,57,43,0.15)',  'var(--red)'];
+        if (n >= 90)  return ['AT CAPACITY',  'rgba(230,126,34,0.15)', 'var(--amber)'];
+        if (n >= 80)  return ['NEAR LIMIT',   'rgba(230,126,34,0.10)', '#E67E22'];
+        return             ['HEALTHY',        'rgba(0,94,96,0.12)',    'var(--ev)'];
+    }
+
+    const T2_MAX = DVLI_W.T2_WIP_PTS + DVLI_W.T2_INTENSITY_PTS;
+    const mark   = (100 / DVLI_W.SCALE_MAX * 100).toFixed(1);
+
+    const cards = scores.map(s => {
+        const color = dvliColor(s.total);
+        const [badge, badgeBg, badgeColor] = dvliStatus(s.total);
+        const gaugeW = Math.min(100, s.total / DVLI_W.SCALE_MAX * 100).toFixed(1);
+        const t1Parts = [ s.cbPLL
+            ? `${s.cbPLL.totalClasses} class${s.cbPLL.totalClasses!==1?'es':''} · ${s.cbPLL.totalStudents} students${s.cbPLL.oeClasses>0?' · '+s.cbPLL.oeClasses+' Cust.':''}`
+            : 'No command board data this week' ];
+        if (s.t1ManualCount > 0) t1Parts.push(`${s.t1ManualCount} manual T1 item${s.t1ManualCount!==1?'s':''}`);
+        const t1Sub = t1Parts.join(' · ');
+        return `<div class="dvli-card">
+            <div class="dvli-card-header">
+                <span class="dvli-card-name">${esc(s.pllName)}</span>
+                <span class="dvli-card-badge" style="background:${badgeBg};color:${badgeColor}">${badge}</span>
+            </div>
+            <div class="dvli-card-body">
+                <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:12px;">
+                    <div class="dvli-score" style="color:${color}">${s.total}</div>
+                    <div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:1.5px;color:#bbb;">/ 100</div>
+                </div>
+                <div class="dvli-gauge-wrap">
+                    <div class="dvli-gauge-fill" style="width:${gaugeW}%;background:${color}"></div>
+                    <div class="dvli-gauge-mark" style="left:${mark}%"></div>
+                </div>
+                <div class="dvli-gauge-scale" style="font-size:9px;color:#bbb;display:flex;justify-content:space-between;margin-bottom:14px;">
+                    <span>0</span><span style="position:absolute;left:${mark}%">100</span><span>150+</span>
+                </div>
+                <div class="dvli-components">
+                    <div class="dvli-comp-row">
+                        <span class="dvli-comp-label">T1 Standard</span>
+                        <div class="dvli-comp-bar-wrap"><div class="dvli-comp-bar" style="width:${Math.round(s.t1/DVLI_W.T1_MAX*100)}%;background:var(--ev)"></div></div>
+                        <span class="dvli-comp-val">${s.t1}/${DVLI_W.T1_MAX}</span>
+                    </div>
+                    <div class="dvli-comp-row">
+                        <span class="dvli-comp-label">T2 Daily Mgmt</span>
+                        <div class="dvli-comp-bar-wrap"><div class="dvli-comp-bar" style="width:${Math.min(100,Math.round(s.t2/T2_MAX*100))}%;background:var(--amber)"></div></div>
+                        <span class="dvli-comp-val">${s.t2}/${T2_MAX}</span>
+                    </div>
+                    <div class="dvli-comp-row">
+                        <span class="dvli-comp-label">T3/4 Queue</span>
+                        <div class="dvli-comp-bar-wrap"><div class="dvli-comp-bar" style="width:${Math.round(s.t34/DVLI_W.T34_MAX*100)}%;background:#888"></div></div>
+                        <span class="dvli-comp-val">${s.t34}/${DVLI_W.T34_MAX}</span>
+                    </div>
+                </div>
+                <div class="dvli-card-sub">${esc(t1Sub)}</div>
+            </div>
+        </div>`;
+    }).join('');
+
+    const overloaded = scores.filter(s => s.total > 100).length;
+    const atCap      = scores.filter(s => s.total >= 80 && s.total <= 100).length;
+    const healthy    = scores.filter(s => s.total < 80).length;
+    const weekOf     = cb?.meta?.weekOf || '—';
+
+    container.innerHTML = `
+        <div class="dvli-summary">
+            <div class="dvli-summary-card">
+                <div class="dvli-summary-val" style="color:var(--done)">${healthy}</div>
+                <div class="dvli-summary-label">Healthy <span style="color:#ccc;font-weight:400">&lt;80</span></div>
+            </div>
+            <div class="dvli-summary-card">
+                <div class="dvli-summary-val" style="color:var(--amber)">${atCap}</div>
+                <div class="dvli-summary-label">Near / At Capacity <span style="color:#ccc;font-weight:400">80–100</span></div>
+            </div>
+            <div class="dvli-summary-card">
+                <div class="dvli-summary-val" style="color:var(--red)">${overloaded}</div>
+                <div class="dvli-summary-label">Overloaded <span style="color:#ccc;font-weight:400">&gt;100</span></div>
+            </div>
+        </div>
+        <div class="dvli-grid">${cards}</div>
+        <div style="font-size:10px;color:#bbb;text-align:right;margin-top:16px;">Command Board: week of ${esc(weekOf)} · Weights adjustable via DVLI_W constants</div>`;
+}
+
+// ── WORKLOAD ─────────────────────────────────────
+async function loadCommandBoard() {
+    if (cbData) return cbData;
+    try {
+        const resp = await fetch(COMMAND_BOARD_URL);
+        cbData = await resp.json();
+    } catch(e) { cbData = null; }
+    return cbData;
+}
+
+document.getElementById('wl-filter-pll').addEventListener('change', renderWorkload);
+
+async function renderWorkload() {
+    const pllId = document.getElementById('wl-filter-pll').value;
+    const container = document.getElementById('workload-container');
+    if (!pllId) {
+        container.innerHTML = '<div class="empty-state"><h3>Select a PLL above</h3><p>Choose a PLL to view their workload and capacity.</p></div>';
+        return;
+    }
+    container.innerHTML = '<div class="loading">Loading workload…</div>';
+
+    // All PLLs mode — render each PLL stacked
+    if (pllId === '__all__') {
+        const cb = await loadCommandBoard();
+        const pllUsers = allUsers.filter(u => u.role !== 'viewer');
+        let html = '';
+        for (const pll of pllUsers) {
+            html += '<div style="margin-bottom:32px;"><div style="padding:10px 0 8px;border-bottom:3px solid var(--lime);margin-bottom:16px;display:flex;align-items:baseline;gap:12px;">'
+                  + '<span style="font-size:16px;font-weight:900;text-transform:uppercase;letter-spacing:1px;color:var(--night);">' + esc(pll.name) + '</span>'
+                  + '<span style="font-size:10px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:1px;">PLL</span>'
+                  + '</div>'
+                  + await renderPLLWorkload(pll.id, pll.name, cb)
+                  + '</div>';
+        }
+        container.innerHTML = html;
+        return;
+    }
+
+    // Single PLL mode
+    const pllUser  = allUsers.find(u => u.id === pllId);
+    const pllName  = pllUser?.name || '';
+    const cb       = await loadCommandBoard();
+    container.innerHTML = await renderPLLWorkload(pllId, pllName, cb);
+}
+
+async function renderPLLWorkload(pllId, pllName, cb) {
+    const pllItems = allItems.filter(i => i.owner_id === pllId);
+    const today    = new Date(); today.setHours(0,0,0,0);
+    const t2Working = pllItems.filter(i => isT2Working(i, today));
+    const t2Queued  = pllItems.filter(i => isT2Queued(i, today));
+    const t2Active  = pllItems.filter(i => i.priority === 'Tier 2' && i.status !== 'Done' && i.status !== 'Deferred');
+    const t2Open    = pllItems.filter(i => i.priority === 'Tier 2' && i.status !== 'Done');
+    const t34      = pllItems.filter(i => (i.priority === 'Tier 3' || i.priority === 'Tier 4') && i.status !== 'Done');
+
+    const cbPLL = cb?.slide2?.plls?.find(p => p.name === pllName) || null;
+
+    const wipCount = t2Working.length;
+    const wipMax   = 5;
+    const wipPct   = Math.min(100, (wipCount / wipMax) * 100);
+    const wipCls   = wipCount >= wipMax ? 'full' : wipCount >= 4 ? 'warn' : 'ok';
+    const wipColor = wipCls === 'full' ? 'var(--red)' : wipCls === 'warn' ? 'var(--amber)' : 'var(--ev)';
+
+    const slot = nextSlotInfo(t2Working, wipMax);
+    const nextOpening = slot.available ? 'Available now' : slot.item ? formatDate(slot.item.due_date) : 'Open-ended';
+
+    // Gantt window
+    const itemsWithDates = t2Active.filter(i => i.start_date && i.due_date);
+    const starts = itemsWithDates.map(i => new Date(i.start_date+'T00:00:00').getTime());
+    const ends   = itemsWithDates.map(i => new Date(i.due_date+'T00:00:00').getTime());
+    const gStart = new Date(Math.min(today.getTime() - 14*86400000, ...(starts.length?starts:[today.getTime()])));
+    const gEnd   = new Date(Math.max(today.getTime() + 180*86400000, ...(ends.length?ends:[today.getTime()+180*86400000])));
+    const gSpan  = gEnd - gStart;
+
+    const todayPct = ((today - gStart) / gSpan * 100).toFixed(1);
+
+    // Axis labels
+    const axisHtml = (() => {
+        const labels = [];
+        const c = new Date(gStart); c.setDate(1);
+        while (c <= gEnd) {
+            const p = ((c - gStart) / gSpan * 100).toFixed(1);
+            if (p >= 0 && p <= 100) labels.push('<div class="gantt-axis-label" style="left:'+p+'%">'+c.toLocaleDateString('en-US',{month:'short',year:'2-digit'})+'</div>');
+            c.setMonth(c.getMonth()+1);
+        }
+        return labels.join('');
+    })();
+
+    // Gantt rows
+    const ganttHtml = t2Active.length ? t2Active.map(item => {
+        let barHtml = '';
+        if (item.start_date && item.due_date) {
+            const s = new Date(item.start_date+'T00:00:00');
+            const e = new Date(item.due_date+'T00:00:00');
+            const left  = Math.max(0, (s-gStart)/gSpan*100);
+            const right = Math.min(100, (e-gStart)/gSpan*100);
+            const w     = Math.max(0.5, right-left);
+            const cls   = item.source==='ap_import' ? 'gantt-bar-ap' : item.source==='vault_import' ? 'gantt-bar-vault' : 'gantt-bar-manual';
+            barHtml = '<div class="gantt-bar '+cls+'" style="left:'+left.toFixed(1)+'%;width:'+w.toFixed(1)+'%">'+formatDate(item.due_date)+'</div>';
+        }
+        const lbl = (item.ap_number ? 'AP '+item.ap_number+' — ' : '') + (item.action_text||'').substring(0,38)+(item.action_text?.length>38?'…':'');
+        return '<div class="gantt-row"><div class="gantt-label" title="'+esc(item.action_text)+'">'+esc(lbl)+'</div><div class="gantt-track">'+barHtml+'<div class="gantt-today" style="left:'+todayPct+'%"></div></div></div>';
+    }).join('') : '<p style="color:#999;font-size:13px;padding:8px 0;">No active Tier 2 items.</p>';
+
+    // Tier 1
+    const t1Html = cbPLL ? '<div class="t1-grid"><div class="t1-card"><div class="t1-card-label">Classes This Week</div><div class="t1-card-value">'+cbPLL.totalClasses+'</div><div class="t1-card-sub">'+cbPLL.totalStudents+' students</div></div><div class="t1-card"><div class="t1-card-label">Internal Students</div><div class="t1-card-value">'+cbPLL.internalStudents+'</div><div class="t1-card-sub">'+(cbPLL.oeStudents>0?cbPLL.oeStudents+' Cust.':'No cust. students')+'</div></div><div class="t1-card"><div class="t1-card-label">Cust. Classes (OE+SS)</div><div class="t1-card-value">'+cbPLL.oeClasses+'</div><div class="t1-card-sub">'+(cbPLL.oeClasses>0?cbPLL.oeStudents+' cust. students':'None this week')+'</div></div><div class="t1-card"><div class="t1-card-label">30-Day Lookahead</div><div class="t1-card-value">'+(cbPLL.lookAhead30?.totalClasses||0)+'</div><div class="t1-card-sub">'+(cbPLL.lookAhead30?.totalStudents||0)+' students</div></div></div>'
+        : '<p style="color:#999;font-size:13px;">No command board data for this PLL.</p>';
+
+    const t1Manual = pllItems.filter(i => isT1Active(i, today));
+    const t1ManualHtml = t1Manual.length
+        ? '<div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--border);"><div style="font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:#999;margin-bottom:6px;">Manual Tier 1 Items</div>'
+          + t1Manual.map(i => '<div style="font-size:12px;color:var(--night);padding:3px 0;">⚑ ' + esc((i.action_text||'').substring(0,80)) + ' <span style="color:#999;font-size:10px;">· Due: ' + (i.due_date?formatDate(i.due_date):'—') + '</span></div>').join('')
+          + '</div>'
+        : '';
+
+    return '<div class="wl-section"><div class="wl-section-header"><span class="wl-section-title">Tier 1 — Standard Work</span><span style="font-size:10px;color:rgba(255,255,255,0.4);">Command Board · '+(cb?.meta?.weekOf||'—')+'</span></div><div class="wl-section-body">'+t1Html+t1ManualHtml+'</div></div>'
+      + '<div class="wl-section"><div class="wl-section-header"><span class="wl-section-title">Tier 2 — Active Workload</span><span style="font-size:10px;color:rgba(255,255,255,0.4);">'+wipCount+' working · '+t2Queued.length+' queued</span></div><div class="wl-section-body"><div class="capacity-gauge"><div class="gauge-track"><div class="gauge-fill gauge-fill-'+wipCls+'" style="width:'+wipPct+'%"></div></div><span class="gauge-label" style="color:'+wipColor+'">'+wipCount+' / '+wipMax+' Active</span></div>'+(t2Active.length?'<div class="gantt-wrap"><div class="gantt-axis">'+axisHtml+'</div>'+ganttHtml+'</div>':ganttHtml)+'<div class="capacity-info"><div class="cap-info-card"><div class="cap-info-label">Currently Working</div><div class="cap-info-value" style="color:'+wipColor+'">'+wipCount+' / '+wipMax+'</div></div><div class="cap-info-card"><div class="cap-info-label">Next Slot Opens</div><div class="cap-info-value">'+nextOpening+'</div></div><div class="cap-info-card"><div class="cap-info-label">In Queue</div><div class="cap-info-value">'+t2Queued.length+'</div></div></div></div></div>'
+      + '<div class="wl-section"><div class="wl-section-header"><span class="wl-section-title">Tier 3–4 Queue</span><span style="font-size:10px;color:rgba(255,255,255,0.4);">Standard &amp; Watch items</span></div><div class="wl-section-body" style="display:flex;align-items:baseline;gap:14px;"><div class="queue-count">'+t34.length+'</div><div class="queue-sub">active items<br><span style="font-size:10px;">'+t34.filter(i=>i.status==='Open').length+' Open · '+t34.filter(i=>i.status==='In Progress').length+' In Progress · '+t34.filter(i=>i.status==='Deferred').length+' Deferred</span></div></div></div>';
+}
+
+// ── FILTERS ───────────────────────────────────────
+['filter-owner','filter-status','filter-tier','filter-category','filter-source'].forEach(id => {
+    document.getElementById(id).addEventListener('change', renderTable);
+});
+
+// ── START ─────────────────────────────────────────
+checkSession();
+
+    // ── Feedback ──────────────────────────────────────────────────────────
+    let currentFeedbackType = 'bug';
+
+    function openFeedbackModal() {
+        setFeedbackType('bug');
+        document.getElementById('feedbackMessage').value = '';
+        document.getElementById('feedbackModal').style.display = 'flex';
+    }
+
+    function closeFeedbackModal() {
+        document.getElementById('feedbackModal').style.display = 'none';
+    }
+
+    function setFeedbackType(type) {
+        currentFeedbackType = type;
+        const bugBtn = document.getElementById('typeBugBtn');
+        const fbBtn  = document.getElementById('typeFeedbackBtn');
+        const label  = document.getElementById('feedbackLabel');
+        const ta     = document.getElementById('feedbackMessage');
+        bugBtn.className = 'feedback-type-btn' + (type === 'bug' ? ' active-bug' : '');
+        fbBtn.className  = 'feedback-type-btn' + (type === 'feedback' ? ' active-feedback' : '');
+        label.textContent    = type === 'bug' ? 'Describe the bug' : 'Share your feedback';
+        ta.placeholder       = type === 'bug'
+            ? 'What happened? What did you expect?'
+            : 'What would make ORiON more useful for you?';
+    }
+
+    async function submitFeedback() {
+        const message = document.getElementById('feedbackMessage').value.trim();
+        if (!message) { showToast('Please enter a message before submitting.', 'error'); return; }
+        const { error } = await db.from('feedback').insert({
+            user_id: currentUser.id,
+            type: currentFeedbackType,
+            message
+        });
+        if (error) { showToast('Submit failed — please try again.', 'error'); return; }
+        closeFeedbackModal();
+        showToast('Submitted — thanks!', 'success');
+    }
+
+    async function loadFeedback() {
+        const { data, error } = await db
+            .from('feedback')
+            .select('id, type, message, submitted_at, resolved, resolved_at, resolved_by, users!user_id(name)')
+            .order('submitted_at', { ascending: false });
+        if (error || !data) return;
+
+        const unresolved = data.filter(f => !f.resolved).length;
+
+        // Update admin nav badge
+        const badge = document.getElementById('adminFeedbackBadge');
+        if (badge) {
+            badge.textContent = unresolved;
+            badge.style.display = unresolved > 0 ? 'inline-flex' : 'none';
+        }
+
+        // Update unresolved count label in panel
+        const countLabel = document.getElementById('feedbackUnresolvedCount');
+        if (countLabel) {
+            countLabel.textContent = unresolved > 0
+                ? unresolved + ' unresolved'
+                : 'All resolved ✓';
+            countLabel.style.color = unresolved > 0 ? 'var(--red)' : 'var(--done)';
+        }
+
+        // Render table
+        const tbody = document.getElementById('feedbackTableBody');
+        if (!tbody) return;
+        if (data.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--body);padding:24px">No feedback submitted yet.</td></tr>';
+            return;
+        }
+        tbody.innerHTML = data.map(f => {
+            const typeBadge = f.type === 'bug'
+                ? '<span class="badge-bug">🐛 Bug</span>'
+                : '<span class="badge-feedback-type">💡 Feedback</span>';
+            const dateStr = new Date(f.submitted_at).toLocaleDateString('en-US',
+                { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+            return `<tr class="${f.resolved ? 'resolved-row' : ''}">
+                <td>${typeBadge}</td>
+                <td>${f.users ? f.users.name : 'Unknown'}</td>
+                <td style="max-width:320px">${(f.message || '').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</td>
+                <td style="white-space:nowrap;color:var(--body);font-size:12px">${dateStr}</td>
+                <td style="text-align:center"><input type="checkbox" ${f.resolved ? 'checked' : ''} onchange="toggleFeedbackResolved('${f.id}',this.checked)"></td>
+            </tr>`;
+        }).join('');
+    }
+
+    async function toggleFeedbackResolved(id, resolved) {
+        const { error } = await db.from('feedback').update({
+            resolved,
+            resolved_at: resolved ? new Date().toISOString() : null,
+            resolved_by: resolved ? currentUser.id : null
+        }).eq('id', id);
+        if (error) { showToast('Update failed.', 'error'); return; }
+        await loadFeedback();
+    }
+
+    async function getUnresolvedFeedbackCount() {
+        const { data } = await db.from('feedback').select('id').eq('resolved', false);
+        return data ? data.length : 0;
+    }
+
+</script>
+
+    <!-- Feedback Button -->
+    <button class="feedback-btn" onclick="openFeedbackModal()" id="feedbackFloatBtn">🐛 Report / Feedback</button>
+
+    <!-- Feedback Modal -->
+    <div id="feedbackModal" class="modal-overlay" style="display:none">
+        <div class="modal" style="max-width:480px">
+            <div class="modal-header">
+                <h3 class="modal-title">Submit Feedback</h3>
+                <button class="modal-close" onclick="closeFeedbackModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="feedback-type-toggle">
+                    <button class="feedback-type-btn active-bug" id="typeBugBtn" onclick="setFeedbackType('bug')">🐛 Bug Report</button>
+                    <button class="feedback-type-btn" id="typeFeedbackBtn" onclick="setFeedbackType('feedback')">💡 Feedback</button>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" id="feedbackLabel">Describe the bug</label>
+                    <textarea id="feedbackMessage" class="form-input" rows="5" placeholder="What happened? What did you expect?"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeFeedbackModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="submitFeedback()">Submit</button>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
