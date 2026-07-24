@@ -62,7 +62,9 @@ Give a short note on what changed and why. Keep the note out of the draft itself
 
 ## Voice calibration
 
-The humanizer skill supports matching against a writing sample. Where a `voice-sample.md` file is available, use it as the reference for all drafting. It should hold five or six messages written before AI drafting began.
+The humanizer skill supports matching against a writing sample. Samples live in the private vault and are not mirrored here.
+
+Working description, in place of the samples: most work email runs under 50 words, opens with the recipient's name and goes straight into the point, closes with a first name or nothing at all. Bad news gets stated plainly and early with no softening preamble. Humor is dry, brief, and self-directed, and never carries the message. Uncertainty gets hedged once and then the point is made anyway. Length is earned by content, not defaulted to.
 
 ---
 
