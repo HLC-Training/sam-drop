@@ -1,7 +1,7 @@
 # Communications Protocol
 
 **Scope:** Global. Applies to every project and every drafting context.
-**Canonical source:** This file. Projects reference it rather than restating it.
+**Status:** Public mirror. The private vault copy is upstream. Edit there, regenerate here.
 **Last revised:** 2026-07-24
 
 ---
