@@ -30,13 +30,13 @@ Reference this before building any branded document, deck, or dashboard for GE V
 - **Non-Latin scripts:** Noto Sans (Black headlines / Regular body).
 - **Email/legal/CAD:** Arial replaces Inter.
 - **Micro-labels/eyebrows:** UPPERCASE, 10–13px, +0.8–2px letter-spacing.
-- Font files (verified, live in repo): `reference/fonts/SonsCondensed-Extrabold.ttf`, `reference/fonts/SonsCondensed-Semibold.ttf`.
+- Font files (verified, live in repo): `reference/GE Vernova Brand/SonsCondensed-Extrabold.ttf`, `reference/GE Vernova Brand/SonsCondensed-Semibold.ttf`.
 
 ## Logo
 
-- Path (verified, live in repo): `reference/logo/`
+- Path (verified, live in repo): `reference/GE Vernova Brand/`
   * `ge-vernova-evergreen.png` / `.svg` — light backgrounds
-  * `ge-vernova-white.png` / `.svg` — dark backgrounds (e.g., on Evergreen headers)
+  * `ge-vernova-white.svg` — dark backgrounds (e.g., on Evergreen headers). **No PNG currently in repo — SVG only, needs rasterizing before use in tools that can't read SVG directly (e.g., reportlab).**
   * `ge-vernova-black.png` / `.svg` — print/pure black-background use
 - Rules: Monogram + wordmark always locked together, horizontal, intact. Clear space ≥ 40% of Monogram height. Min height 25px (digital). Never recolor, skew, outline, or use the Monogram alone.
 
@@ -46,4 +46,4 @@ Badge 3px · button/control 6px · callout/toggle 8px · card/panel 10px · pill
 
 ## Full design system
 
-Original Design-exported bundle path (`_ds/ge-vernova-ofs-training-design-system-bdce87b1-cf6e-44c8-a53e-36a36984975a/`) is not populated in this repo — only this tokens file made it out of Design. The verified, working assets are the flattened `reference/fonts/` and `reference/logo/` paths above. If a full component/token bundle gets exported from Design later, drop it at `reference/_ds/` and update this section.
+Original Design-exported bundle path is not populated in this repo — only this tokens file made it out of Design. Verified, working assets live flat in `reference/GE Vernova Brand/` (no subfolders as of this update). Other brand families (ORiON, personal) are expected to get their own sibling folders under `reference/` alongside this one as they're built out.
