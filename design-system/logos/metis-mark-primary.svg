@@ -1,0 +1,9 @@
+<svg viewBox="0 0 96 96" width="96" height="96" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Métis mark">
+<g fill="none" stroke="#005E60" stroke-width="7" stroke-linecap="round">
+<path id="t" d="M48,8 C70,8 82,26 78,46 C75,60 64,66 53,61"></path>
+<use href="#t" transform="rotate(90 48 48)"></use>
+<use href="#t" transform="rotate(180 48 48)"></use>
+<use href="#t" transform="rotate(270 48 48)"></use>
+</g>
+<circle cx="48" cy="48" r="7" fill="#FFB238"></circle>
+</svg>
