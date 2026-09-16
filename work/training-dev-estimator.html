@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HLC Training Development Estimator</title>
+<style>
+  :root {
+    --ink: #1b1e21;
+    --ink-soft: #4a5158;
+    --line: #c9cdd1;
+    --line-soft: #e3e6e8;
+    --paper: #f6f5f2;
+    --panel: #ffffff;
+    --steel: #2f5266;
+    --steel-bright: #3f7da0;
+    --amber: #b06a15;
+    --flag: #9a3b2e;
+    --grid: #eceae5;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    background: var(--paper);
+    background-image:
+      linear-gradient(var(--grid) 1px, transparent 1px),
+      linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+    background-size: 24px 24px;
+    color: var(--ink);
+    font-family: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+    line-height: 1.5;
+    padding: 28px 18px 64px;
+  }
+  .sheet {
+    max-width: 940px;
+    margin: 0 auto;
+    background: var(--panel);
+    border: 1.5px solid var(--ink);
+    box-shadow: 6px 6px 0 rgba(27,30,33,0.08);
+  }
+
+  /* Masthead */
+  header {
+    border-bottom: 1.5px solid var(--ink);
+    padding: 22px 30px 18px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+  .title-block h1 {
+    font-size: 25px;
+    margin: 0;
+    letter-spacing: 0.2px;
+    font-weight: 700;
+  }
+  .title-block p {
+    margin: 4px 0 0;
+    font-family: "SF Mono", "Roboto Mono", ui-monospace, monospace;
+    font-size: 11px;
+    color: var(--ink-soft);
+    letter-spacing: 0.4px;
+  }
+  .stamp {
+    font-family: "SF Mono", "Roboto Mono", ui-monospace, monospace;
+    font-size: 10px;
+    color: var(--ink-soft);
+    text-align: right;
+    line-height: 1.7;
+    border: 1px solid var(--line);
+    padding: 7px 11px;
+    background: var(--paper);
+  }
+  .stamp b { color: var(--steel); }
+
+  .body { padding: 26px 30px 30px; }
+
+  .lede {
+    font-size: 15px;
+    color: var(--ink-soft);
+    max-width: 68ch;
+    margin: 0 0 26px;
+  }
+  .lede b { color: var(--ink); font-weight: 700; }
+
+  section { margin-bottom: 30px; }
+  .sec-head {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 6px;
+    margin-bottom: 16px;
+  }
+  .sec-num {
+    font-family: "SF Mono", "Roboto Mono", ui-monospace, monospace;
+    font-size: 12px;
+    color: var(--steel);
+    font-weight: 700;
+  }
+  .sec-head h2 { font-size: 17px; margin: 0; font-weight: 700; }
+
+  /* Calculator */
+  .calc {
+    border: 1.5px solid var(--ink);
+    background: var(--paper);
+  }
+  .calc-inputs {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0;
+  }
+  .field {
+    padding: 15px 18px;
+    border-bottom: 1px solid var(--line);
+  }
+  .field:nth-child(odd) { border-right: 1px solid var(--line); }
+  .field label {
+    display: block;
+    font-family: "SF Mono", "Roboto Mono", ui-monospace, monospace;
+    font-size: 11px;
+    letter-spacing: 0.3px;
+    color: var(--ink-soft);
+    margin-bottom: 7px;
+  }
+  .field select, .field input {
+    width: 100%;
+    font-family: inherit;
+    font-size: 15px;
+    color: var(--ink);
+    background: var(--panel);
+    border: 1px solid var(--line);
+    padding: 8px 10px;
+  }
+  .field input:focus, .field select:focus {
+    outline: 2px solid var(--steel-bright);
+    outline-offset: -1px;
+  }
+  .field .hint {
+    font-size: 12px;
+    color: var(--ink-soft);
+    margin-top: 6px;
+    min-height: 15px;
+  }
+
+  /* Output */
+  .readout {
+    padding: 20px 18px;
+    background: var(--ink);
+    color: #f3f2ee;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 18px;
+  }
+  .metric .k {
+    font-family: "SF Mono", "Roboto Mono", ui-monospace, monospace;
+    font-size: 10.5px;
+    letter-spacing: 0.4px;
+    color: #9fb4c0;
+    margin-bottom: 5px;
+  }
+  .metric .v {
+    font-size: 27px;
+    font-weight: 700;
+    line-height: 1.05;
+    font-variant-numeric: tabular-nums;
+  }
+  .metric .v span { font-size: 14px; font-weight: 400; color: #aab6bd; }
+  .metric .sub {
+    font-family: "SF Mono", "Roboto Mono", ui-monospace, monospace;
+    font-size: 10.5px;
+    color: #8ea3ad;
+    margin-top: 4px;
+  }
+  .rangebar {
+    grid-column: 1 / -1;
+    border-top: 1px solid #3a3f44;
+    padding-top: 13px;
+    font-family: "SF Mono", "Roboto Mono", ui-monospace, monospace;
+    font-size: 11px;
+    color: #cdd6da;
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .rangebar b { color: #fff; }
+
+  /* Reference table */
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  thead th {
+    text-align: left;
+    font-family: "SF Mono", "Roboto Mono", ui-monospace, monospace;
+    font-size: 10.5px;
+    letter-spacing: 0.3px;
+    color: var(--ink-soft);
+    font-weight: 400;
+    border-bottom: 1.5px solid var(--ink);
+    padding: 8px 10px;
+  }
+  tbody td {
+    padding: 9px 10px;
+    border-bottom: 1px solid var(--line-soft);
+    vertical-align: top;
+  }
+  tbody tr:last-child td { border-bottom: none; }
+  td.type { font-weight: 700; width: 30%; }
+  td.ratio {
+    font-family: "SF Mono", "Roboto Mono", ui-monospace, monospace;
+    color: var(--steel);
+    white-space: nowrap;
+    width: 18%;
+  }
+  .row-note { color: var(--ink-soft); font-size: 13px; }
+
+  .drivers {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0 26px;
+  }
+  .drivers ul { margin: 0; padding-left: 18px; }
+  .drivers li { margin-bottom: 6px; font-size: 14px; }
+  .drivers h3 {
+    font-size: 13px;
+    font-family: "SF Mono", "Roboto Mono", ui-monospace, monospace;
+    color: var(--amber);
+    margin: 0 0 10px;
+    letter-spacing: 0.3px;
+  }
+
+  .flag {
+    border-left: 3px solid var(--flag);
+    background: #faf3f1;
+    padding: 12px 16px;
+    font-size: 13.5px;
+    color: #5a2620;
+    margin-top: 14px;
+  }
+  .flag b { color: var(--flag); }
+
+  .worked {
+    border: 1px solid var(--line);
+    background: var(--paper);
+    padding: 15px 18px;
+    font-size: 13.5px;
+  }
+  .worked .line {
+    display: flex;
+    justify-content: space-between;
+    padding: 4px 0;
+    border-bottom: 1px dotted var(--line);
+    font-family: "SF Mono", "Roboto Mono", ui-monospace, monospace;
+    font-size: 12.5px;
+  }
+  .worked .line:last-child { border-bottom: none; font-weight: 700; color: var(--steel); }
+  .worked .cap { font-family: inherit; font-size: 13px; color: var(--ink-soft); margin-bottom: 8px; }
+
+  footer {
+    border-top: 1.5px solid var(--ink);
+    padding: 16px 30px;
+    font-size: 11.5px;
+    color: var(--ink-soft);
+  }
+  footer b { color: var(--ink); }
+  footer .src {
+    font-family: "SF Mono", "Roboto Mono", ui-monospace, monospace;
+    font-size: 10.5px;
+    margin-top: 6px;
+  }
+
+  @media (max-width: 680px) {
+    .calc-inputs { grid-template-columns: 1fr; }
+    .field:nth-child(odd) { border-right: none; }
+    .readout { grid-template-columns: 1fr 1fr; }
+    .drivers { grid-template-columns: 1fr; }
+    header { flex-direction: column; align-items: flex-start; }
+  }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <header>
+    <div class="title-block">
+      <h1>Training Development Estimator</h1>
+      <p>HLC / OFS &nbsp;·&nbsp; DESIGN + BUILD EFFORT AND COST &nbsp;·&nbsp; TPM REFERENCE</p>
+    </div>
+    <div class="stamp">
+      REV <b>2026-09-03</b><br>
+      BASIS: CHAPMAN / ATD / KAPP<br>
+      UNITS: HRS PER FINISHED HR
+    </div>
+  </header>
+
+  <div class="body">
+    <p class="lede">
+      Estimate the effort and cost to design and build one training program. Pick the format, enter how many
+      <b>finished (seat) hours</b> the program runs, set complexity, and the tool applies the industry development
+      ratio. These are planning ranges, not quotes. Treat the output as a starting point you defend, then adjust
+      for what you actually know about the course.
+    </p>
+
+    <!-- CALCULATOR -->
+    <section>
+      <div class="sec-head"><span class="sec-num">01</span><h2>Estimator</h2></div>
+      <div class="calc">
+        <div class="calc-inputs">
+          <div class="field">
+            <label>TRAINING FORMAT</label>
+            <select id="format">
+              <option value="ilt">Instructor-Led — Classroom (lecture / discussion)</option>
+              <option value="hands" selected>Instructor-Led — Hands-On / Lab / Shop</option>
+              <option value="vilt">Virtual Instructor-Led (VILT)</option>
+              <option value="elearn">Self-Paced e-Learning (WBT)</option>
+            </select>
+            <div class="hint" id="formatHint"></div>
+          </div>
+          <div class="field">
+            <label>FINISHED (SEAT) HOURS</label>
+            <input id="hours" type="number" min="0" step="0.5" value="8">
+            <div class="hint">Total time a learner spends in the program.</div>
+          </div>
+          <div class="field">
+            <label>COMPLEXITY</label>
+            <select id="complexity">
+              <option value="low">Low — existing content, minor updates, one SME</option>
+              <option value="med" selected>Moderate — new content, standard build</option>
+              <option value="high">High — custom, heavy assessment, multi-SME, new equipment</option>
+            </select>
+            <div class="hint" id="cplxHint"></div>
+          </div>
+          <div class="field">
+            <label>LOADED LABOR RATE ($/HR)</label>
+            <input id="rate" type="number" min="0" step="1" value="65">
+            <div class="hint">Internal developer fully-loaded. Contract runs $75–100+.</div>
+          </div>
+        </div>
+        <div class="readout">
+          <div class="metric">
+            <div class="k">DEV RATIO APPLIED</div>
+            <div class="v" id="mRatio">—<span>:1</span></div>
+            <div class="sub" id="mRatioSub">hrs build : 1 hr class</div>
+          </div>
+          <div class="metric">
+            <div class="k">DEVELOPMENT EFFORT</div>
+            <div class="v" id="mHours">—<span> hrs</span></div>
+            <div class="sub" id="mWeeks">— dev-weeks</div>
+          </div>
+          <div class="metric">
+            <div class="k">EST. DEVELOPMENT COST</div>
+            <div class="v" id="mCost">—</div>
+            <div class="sub">labor only</div>
+          </div>
+          <div class="rangebar">
+            <span>PLANNING RANGE (low–high): <b id="mRange">—</b></span>
+            <span>COST RANGE: <b id="mCostRange">—</b></span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- REFERENCE -->
+    <section>
+      <div class="sec-head"><span class="sec-num">02</span><h2>The Ratios</h2></div>
+      <table>
+        <thead>
+          <tr><th>Format</th><th>Dev : Finished Hr</th><th>Notes</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="type">Classroom ILT</td>
+            <td class="ratio">34 – 49 : 1</td>
+            <td class="row-note">The anchor benchmark (Chapman ~43:1, ATD 40–49:1). Slides, guides, handouts, facilitator prep. Use as the credible floor in any discussion.</td>
+          </tr>
+          <tr>
+            <td class="type">Hands-On / Lab</td>
+            <td class="ratio">50 – 100+ : 1</td>
+            <td class="row-note">Not isolated in the published studies, so it's inferred. Carries everything classroom does plus lab build, equipment, task breakdowns, practical assessment, safety validation, trainer qualification.</td>
+          </tr>
+          <tr>
+            <td class="type">VILT</td>
+            <td class="ratio">40 – 60 : 1</td>
+            <td class="row-note">Classroom effort plus platform build, virtual engagement design, and producer/facilitator rehearsal.</td>
+          </tr>
+          <tr>
+            <td class="type">Self-Paced e-Learning</td>
+            <td class="ratio">73 – 160+ : 1</td>
+            <td class="row-note">Rises fast with interactivity. Low end is page-turner; high end is simulation and branching. Highest cost per finished hour of any format.</td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="flag">
+        <b>Read before you quote.</b> These are consultant/contractor benchmarks. Internal staff runs roughly
+        60–70% of the contract <i>cost</i>, but the <i>hours</i> don't shrink. If you're defending PLL capacity,
+        hours-per-course is the honest number, not the discounted cost. And a stakeholder hearing "80 hours to build
+        one hour of hands-on" tends to disbelieve it on the spot, so lead with the classroom floor, then show the
+        hands-on multiplier with its drivers itemized.
+      </div>
+    </section>
+
+    <!-- DRIVERS -->
+    <section>
+      <div class="sec-head"><span class="sec-num">03</span><h2>Why Hands-On Costs More</h2></div>
+      <div class="drivers">
+        <div>
+          <h3>ADDED TO EVERY LAB BUILD</h3>
+          <ul>
+            <li>Lab / shop setup and station design</li>
+            <li>Equipment, tooling, and consumables</li>
+            <li>Step-level task breakdowns and job aids</li>
+            <li>Skills checklists and practical assessments</li>
+          </ul>
+        </div>
+        <div>
+          <h3>WHAT PUSHES IT TO THE HIGH END</h3>
+          <ul>
+            <li>Safety validation on live equipment</li>
+            <li>Trainer qualification on the actual hardware</li>
+            <li>New / first-of-kind equipment with no prior content</li>
+            <li>Heavy customization or multiple SMEs to reconcile</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- WORKED EXAMPLE -->
+    <section>
+      <div class="sec-head"><span class="sec-num">04</span><h2>Worked Example</h2></div>
+      <div class="worked">
+        <p class="cap">A new 3-day (24 finished-hour) hands-on course, moderate complexity, internal build at $65/hr loaded.</p>
+        <div class="line"><span>24 finished hrs &times; 65:1 (moderate hands-on)</span><span>= 1,560 dev hrs</span></div>
+        <div class="line"><span>1,560 hrs &divide; 40 hr week</span><span>&asymp; 39 dev-weeks</span></div>
+        <div class="line"><span>1,560 hrs &times; $65</span><span>&asymp; $101,400</span></div>
+        <div class="line"><span>Planning range (50:1 – 100:1)</span><span>1,200 – 2,400 hrs</span></div>
+      </div>
+    </section>
+  </div>
+
+  <footer>
+    <b>How to use this:</b> The tool gives you a defensible midpoint and a range. Bring the range to the intake
+    conversation, not a single number, and name the drivers that put a given course toward the high end. When in
+    doubt, estimate high and beat it.
+    <div class="src">SOURCES: Chapman Alliance dev-ratio research · ATD instructional-design benchmarks · Kapp high-complexity study. Ratios are industry planning figures and vary by org maturity, content reuse, and equipment.</div>
+  </footer>
+</div>
+
+<script>
+  const RATIOS = {
+    ilt:    { low: 34, mid: 43, high: 49, label: 'hrs build : 1 hr class' },
+    hands:  { low: 50, mid: 65, high: 100, label: 'hrs build : 1 hr lab' },
+    vilt:   { low: 40, mid: 50, high: 60, label: 'hrs build : 1 hr virtual' },
+    elearn: { low: 73, mid: 120, high: 160, label: 'hrs build : 1 hr WBT' }
+  };
+  const FORMAT_HINT = {
+    ilt: 'Lecture / discussion. The credible floor.',
+    hands: 'Lab / shop / equipment. HLC default.',
+    vilt: 'Live online, platform-delivered.',
+    elearn: 'Self-paced module. Highest per-hour.'
+  };
+  // complexity nudges the applied ratio within the format band
+  const CPLX = {
+    low:  { pick: 'low',  hint: 'Pulls the applied ratio to the low end.' },
+    med:  { pick: 'mid',  hint: 'Uses the middle of the band.' },
+    high: { pick: 'high', hint: 'Pulls the applied ratio to the high end.' }
+  };
+
+  const $ = id => document.getElementById(id);
+  const fmtMoney = n => '$' + Math.round(n).toLocaleString('en-US');
+
+  function calc() {
+    const f = $('format').value;
+    const r = RATIOS[f];
+    const hrs = parseFloat($('hours').value) || 0;
+    const cplx = CPLX[$('complexity').value];
+    const rate = parseFloat($('rate').value) || 0;
+
+    const applied = r[cplx.pick];
+
+    // hints
+    $('formatHint').textContent = FORMAT_HINT[f];
+    $('cplxHint').textContent = cplx.hint;
+    $('mRatioSub').textContent = r.label;
+
+    const devHrs = hrs * applied;
+    const loHrs = hrs * r.low;
+    const hiHrs = hrs * r.high;
+
+    $('mRatio').innerHTML = applied + '<span>:1</span>';
+    $('mHours').innerHTML = Math.round(devHrs).toLocaleString('en-US') + '<span> hrs</span>';
+    $('mWeeks').textContent = (devHrs / 40).toFixed(1) + ' dev-weeks';
+    $('mCost').textContent = fmtMoney(devHrs * rate);
+    $('mRange').textContent = Math.round(loHrs).toLocaleString('en-US') + ' – ' + Math.round(hiHrs).toLocaleString('en-US') + ' hrs';
+    $('mCostRange').textContent = fmtMoney(loHrs * rate) + ' – ' + fmtMoney(hiHrs * rate);
+  }
+
+  ['format','hours','complexity','rate'].forEach(id => {
+    $(id).addEventListener('input', calc);
+    $(id).addEventListener('change', calc);
+  });
+  calc();
+</script>
+</body>
+</html>
