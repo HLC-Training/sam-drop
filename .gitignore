@@ -1,0 +1,8 @@
+# Large media/archives exceed GitHub 100MB per-file limit — keep out of git
+*.mp4
+*.mov
+*.avi
+*.zip
+*.7z
+*.iso
+*.tmp
